@@ -10,7 +10,7 @@
         "serve": "weweb serve"
     },
     "dependencies": {
-        "swiper": "^6.5.8"
+        "swiper": "^6.8.4"
     },
     "devDependencies": {
         "@vue/eslint-config-prettier": "^6.0.0",

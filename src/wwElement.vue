@@ -1,15 +1,20 @@
 <template>
     <div class="element-container" :style="cssVariables">
-        <!-- Slider main container -->
         <div class="swiper-container" :class="'swiper-free-mode ' + 'unique-swipper-container-' + uniqueID">
-            <!-- Additional required wrapper -->
-            <div class="swiper-wrapper">
-                <!-- Slides -->
-                <div v-for="(slide, index) in content.slides.items" :key="index" class="swiper-slide">
-                    <wwLayout class="slide-layout" :path="`slidesLayout[${index}]`" direction="column"></wwLayout>
-                </div>
-            </div>
+            <wwLayout
+                ww-no-drag-drop="true"
+                path="mainLayoutContent"
+                class="swiper-wrapper"
+                @update:list="handleUpdate($event)"
+            >
+                <template #default="{ item }">
+                    <wwLayoutItem class="swiper-slide">
+                        <wwElement class="slide-container" v-bind="item" />
+                    </wwLayoutItem>
+                </template>
+            </wwLayout>
         </div>
+
         <div v-show="content.pagination" class="bullets">
             <div v-for="index in Math.ceil(bullets)" :key="index" class="bullet-container" @click="slideTo(index - 1)">
                 <wwElement
@@ -29,10 +34,9 @@
 </template>
 
 <script>
-// import Swiper JS
 import Swiper from 'swiper/bundle';
-// import Swiper styles
 import 'swiper/swiper-bundle.css';
+
 /* wwEditor:start */
 import { getSettingsConfigurations } from './configuration';
 /* wwEditor:end */
@@ -63,7 +67,8 @@ export default {
             ],
             target: null,
         },
-        slidesLayout: [],
+        slidesContainer: [],
+        mainLayoutContent: [wwLib.element('ww-flexbox'), wwLib.element('ww-flexbox'), wwLib.element('ww-flexbox')],
         bulletsLayout: [],
         bulletsLayoutStates: [],
         slidesPerView: wwLib.responsive(1),
@@ -131,27 +136,30 @@ export default {
         },
     },
     watch: {
-        'content.slides.items'(newValue, oldValue) {
+        'content.slides.items': async function (newValue, oldValue) {
             this.swiperInstance.destroy(true, true);
 
-            if (newValue.length > oldValue.length) {
-                const slidesLayout = [...this.content.slidesLayout];
-                if (slidesLayout[this.content.slides.items.length - 2]) {
-                    slidesLayout[this.content.slides.items.length - 1] =
-                        slidesLayout[this.content.slides.items.length - 2];
+            if (newValue && oldValue && newValue.length > oldValue.length) {
+                const mainLayoutContent = [...this.content.mainLayoutContent];
+                if (mainLayoutContent[this.content.slides.items.length - 2]) {
+                    mainLayoutContent[this.content.slides.items.length - 1] = await this.cloneElement(
+                        mainLayoutContent[this.content.slides.items.length - 2].uid
+                    );
                 } else {
-                    slidesLayout[this.content.slides.items.length - 1] = slidesLayout[0];
+                    mainLayoutContent[this.content.slides.items.length - 1] = await this.cloneElement(
+                        mainLayoutContent[0].uid
+                    );
                 }
 
-                this.$emit('update:content', { slidesLayout });
+                this.$emit('update:content', { mainLayoutContent });
             }
 
             if (this.content.slides.target) {
-                const slidesLayout = [...this.content.slidesLayout];
-                slidesLayout.splice(this.content.slides.target, 1);
+                const mainLayoutContent = [...this.content.mainLayoutContent];
+                mainLayoutContent.splice(this.content.slides.target, 1);
 
                 this.$emit('update:content', {
-                    slidesLayout,
+                    mainLayoutContent,
                     slides: { ...this.content.slides, target: null },
                 });
             }
@@ -272,6 +280,46 @@ export default {
                 wwLib.wwLog.error('Slider instance not found:', error);
             }
         },
+        handleUpdate(event) {
+            console.log(event);
+
+            if (event.type === 'add') {
+                const oldSlidesItems = this.content.slides.items;
+                const newSlidesItems = [];
+
+                for (let i = 0; i < oldSlidesItems.length + 1; i++) {
+                    newSlidesItems.push({
+                        checked: i === event.index ? true : false,
+                        index: i,
+                    });
+                }
+
+                const slides = {
+                    items: newSlidesItems,
+                    target: null,
+                };
+
+                this.$emit('update:content', { slides });
+                this.slideTo(event.index);
+            } else if (event.type === 'remove') {
+                const oldSlidesItems = this.content.slides.items;
+                const newSlidesItems = [];
+
+                for (let i = 0; i < oldSlidesItems.length - 1; i++) {
+                    newSlidesItems.push({
+                        checked: i === 0 ? true : false,
+                        index: i,
+                    });
+                }
+
+                const slides = {
+                    items: newSlidesItems,
+                    target: null,
+                };
+
+                this.$emit('update:content', { slides });
+            }
+        },
         slideTo(index) {
             this.swiperInstance.slideTo(index, this.transitionDuration, false);
         },
@@ -287,6 +335,11 @@ export default {
             this.intervalHolder = setInterval(() => {
                 this.slideNext();
             }, this.automaticTiming * 1000);
+        },
+        async cloneElement(uid) {
+            const template = wwLib.$store.getters['websiteData/getFullWwObject'](uid);
+            const newWwObjectId = await wwLib.wwObjectHelper.createFromTemplate(template);
+            return { isWwObject: true, uid: newWwObjectId };
         },
     },
 };
@@ -315,6 +368,10 @@ export default {
 }
 .swiper-wrapper {
     position: relative;
+
+    .slide-container {
+        width: 100%;
+    }
 }
 .swiper-free-mode > .swiper-wrapper {
     transition-timing-function: var(--timing-function);
