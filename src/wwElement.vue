@@ -136,6 +136,7 @@ export default {
         },
     },
     watch: {
+        /* wwEditor:start */
         'content.slides.items': async function (newValue, oldValue) {
             this.swiperInstance.destroy(true, true);
 
@@ -242,6 +243,7 @@ export default {
                 this.initSwiper();
             });
         },
+        /* wwEditor:end */
     },
     mounted() {
         this.$emit('update:content', { numberOfSlides: this.content.slides.items.length });
@@ -280,9 +282,8 @@ export default {
                 wwLib.wwLog.error('Slider instance not found:', error);
             }
         },
+        /* wwEditor:start */
         handleUpdate(event) {
-            console.log(event);
-
             if (event.type === 'add') {
                 const oldSlidesItems = this.content.slides.items;
                 const newSlidesItems = [];
@@ -320,6 +321,7 @@ export default {
                 this.$emit('update:content', { slides });
             }
         },
+        /* wwEditor:end */
         slideTo(index) {
             this.swiperInstance.slideTo(index, this.transitionDuration, false);
         },
@@ -336,11 +338,13 @@ export default {
                 this.slideNext();
             }, this.automaticTiming * 1000);
         },
+        /* wwEditor:start */
         async cloneElement(uid) {
             const template = wwLib.$store.getters['websiteData/getFullWwObject'](uid);
             const newWwObjectId = await wwLib.wwObjectHelper.createFromTemplate(template);
             return { isWwObject: true, uid: newWwObjectId };
         },
+        /* wwEditor:end */
     },
 };
 </script>
