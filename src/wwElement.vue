@@ -68,7 +68,11 @@ export default {
             target: null,
         },
         slidesContainer: [],
-        mainLayoutContent: [wwLib.element('ww-flexbox'), wwLib.element('ww-flexbox'), wwLib.element('ww-flexbox')],
+        mainLayoutContent: [
+            wwLib.element({ type: 'ww-flexbox', content: { direction: 'column' } }),
+            wwLib.element({ type: 'ww-flexbox', content: { direction: 'column' } }),
+            wwLib.element({ type: 'ww-flexbox', content: { direction: 'column' } }),
+        ],
         bulletsLayout: [],
         bulletsLayoutStates: [],
         slidesPerView: wwLib.responsive(1),
@@ -140,19 +144,22 @@ export default {
         'content.slides.items': async function (newValue, oldValue) {
             this.swiperInstance.destroy(true, true);
 
-            if (newValue && oldValue && newValue.length > oldValue.length) {
-                const mainLayoutContent = [...this.content.mainLayoutContent];
-                if (mainLayoutContent[this.content.slides.items.length - 2]) {
-                    mainLayoutContent[this.content.slides.items.length - 1] = await this.cloneElement(
-                        mainLayoutContent[this.content.slides.items.length - 2].uid
-                    );
-                } else {
-                    mainLayoutContent[this.content.slides.items.length - 1] = await this.cloneElement(
-                        mainLayoutContent[0].uid
-                    );
-                }
+            // To avoid a duplicate content effect. No better solution for now
+            if (this.content.mainLayoutContent.length !== newValue.length) {
+                if (newValue && oldValue && newValue.length > oldValue.length) {
+                    const mainLayoutContent = [...this.content.mainLayoutContent];
+                    if (mainLayoutContent[this.content.slides.items.length - 2]) {
+                        mainLayoutContent[this.content.slides.items.length - 1] = await this.cloneElement(
+                            mainLayoutContent[this.content.slides.items.length - 2].uid
+                        );
+                    } else {
+                        mainLayoutContent[this.content.slides.items.length - 1] = await this.cloneElement(
+                            mainLayoutContent[0].uid
+                        );
+                    }
 
-                this.$emit('update:content', { mainLayoutContent });
+                    this.$emit('update:content', { mainLayoutContent });
+                }
             }
 
             if (this.content.slides.target) {
@@ -282,44 +289,49 @@ export default {
                 wwLib.wwLog.error('Slider instance not found:', error);
             }
         },
+        printInfo() {
+            console.log(this.content.mainLayoutContent);
+        },
         /* wwEditor:start */
         handleUpdate(event) {
             if (event.type === 'add') {
-                const oldSlidesItems = this.content.slides.items;
+                const oldSize = this.content.slides.items.length;
                 const newSlidesItems = [];
-
-                for (let i = 0; i < oldSlidesItems.length + 1; i++) {
+                for (let i = 0; i < oldSize + 1; i++) {
                     newSlidesItems.push({
-                        checked: i === event.index ? true : false,
+                        checked: i === event.index,
                         index: i,
                     });
                 }
-
-                const slides = {
-                    items: newSlidesItems,
-                    target: null,
-                };
-
-                this.$emit('update:content', { slides });
+                this.$emit('update:content', {
+                    slides: {
+                        items: newSlidesItems,
+                        target: null,
+                    },
+                });
                 this.slideTo(event.index);
             } else if (event.type === 'remove') {
-                const oldSlidesItems = this.content.slides.items;
+                const oldSize = this.content.slides.items.length;
                 const newSlidesItems = [];
-
-                for (let i = 0; i < oldSlidesItems.length - 1; i++) {
+                for (let i = 0; i < oldSize - 1; i++) {
                     newSlidesItems.push({
-                        checked: i === 0 ? true : false,
+                        checked: i === 0,
                         index: i,
                     });
                 }
 
-                const slides = {
-                    items: newSlidesItems,
-                    target: null,
-                };
-
-                this.$emit('update:content', { slides });
+                this.$emit('update:content', {
+                    slides: {
+                        items: newSlidesItems,
+                        target: null,
+                    },
+                });
             }
+
+            this.swiperInstance.destroy(true, true);
+            this.$nextTick(() => {
+                this.initSwiper();
+            });
         },
         /* wwEditor:end */
         slideTo(index) {
