@@ -289,9 +289,6 @@ export default {
                 wwLib.wwLog.error('Slider instance not found:', error);
             }
         },
-        printInfo() {
-            console.log(this.content.mainLayoutContent);
-        },
         /* wwEditor:start */
         handleUpdate(event) {
             if (event.type === 'add') {
