@@ -20,7 +20,7 @@
                 <wwElement
                     class="bulletIcon"
                     v-bind="content.bulletsIcons"
-                    :states="index - 1 === sliderIndex ? ['active'] : []"
+                    :states="index - 1 === sliderIndex ? ['active', 'Current Slide'] : []"
                 />
             </div>
         </div>
