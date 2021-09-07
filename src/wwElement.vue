@@ -2,7 +2,7 @@
     <div class="element-container" :style="cssVariables">
         <div class="swiper-container" :class="'swiper-free-mode ' + 'unique-swipper-container-' + uniqueID">
             <wwLayout
-                ww-no-drag-drop="true"
+                disable-drag-drop="true"
                 path="mainLayoutContent"
                 class="swiper-wrapper"
                 @update:list="handleUpdate($event)"
