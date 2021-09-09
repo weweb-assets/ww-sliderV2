@@ -193,22 +193,6 @@ export default {
         isEditing() {
             this.swiperInstance.destroy(true, true);
 
-            const size = this.content.slides.items.length;
-            const newSlidesItems = [];
-            for (let i = 0; i < size - 1; i++) {
-                newSlidesItems.push({
-                    checked: i === 0,
-                    index: i,
-                });
-            }
-
-            this.$emit('update:content', {
-                slides: {
-                    items: newSlidesItems,
-                    target: null,
-                },
-            });
-
             this.$nextTick(() => {
                 this.initSwiper();
             });
