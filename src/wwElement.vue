@@ -1,5 +1,5 @@
 <template>
-    <div class="element-container" :style="cssVariables">
+    <div class="element-container" :style="cssVariables" :class="{ editing: isEditing, selected: isSelected }">
         <div class="swiper-container" :class="'swiper-free-mode ' + 'unique-swipper-container-' + uniqueID">
             <wwLayout
                 disable-drag-drop="true"
@@ -30,6 +30,13 @@
         <div v-show="showRightNav" class="navigation-container" @click="slideNext">
             <wwElement class="layout-next" v-bind="content.navigationIcons[1]" />
         </div>
+
+        <!-- wwEditor:start -->
+        <div class="element-container__status label-xs">Slide {{ sliderIndex + 1 }}</div>
+        <div class="element-container__menu">
+            <wwEditorIcon small name="slider" />
+        </div>
+        <!-- wwEditor:end -->
     </div>
 </template>
 
@@ -110,6 +117,13 @@ export default {
             // eslint-disable-next-line no-unreachable
             return false;
         },
+        isSelected() {
+            /* wwEditor:start */
+            return this.wwEditorState.isSelected;
+            /* wwEditor:end */
+            // eslint-disable-next-line no-unreachable
+            return false;
+        },
         showLeftNav() {
             const isFirst = this.sliderIndex > 0 || this.content.loop;
 
@@ -149,13 +163,13 @@ export default {
                 if (newValue && oldValue && newValue.length > oldValue.length) {
                     const mainLayoutContent = [...this.content.mainLayoutContent];
                     if (mainLayoutContent[this.content.slides.items.length - 2]) {
-                        mainLayoutContent[this.content.slides.items.length - 1] = await this.cloneElement(
-                            mainLayoutContent[this.content.slides.items.length - 2].uid
-                        );
+                        mainLayoutContent[this.content.slides.items.length - 1] =
+                            await wwLib.wwObjectHelper.cloneElement(
+                                mainLayoutContent[this.content.slides.items.length - 2].uid
+                            );
                     } else {
-                        mainLayoutContent[this.content.slides.items.length - 1] = await this.cloneElement(
-                            mainLayoutContent[0].uid
-                        );
+                        mainLayoutContent[this.content.slides.items.length - 1] =
+                            await wwLib.wwObjectHelper.cloneElement(mainLayoutContent[0].uid);
                     }
 
                     this.$emit('update:content', { mainLayoutContent });
@@ -347,13 +361,6 @@ export default {
                 this.slideNext();
             }, this.automaticTiming * 1000);
         },
-        /* wwEditor:start */
-        async cloneElement(uid) {
-            const template = wwLib.$store.getters['websiteData/getFullWwObject'](uid);
-            const newWwObjectId = await wwLib.wwObjectHelper.createFromTemplate(template);
-            return { isWwObject: true, uid: newWwObjectId };
-        },
-        /* wwEditor:end */
     },
 };
 </script>
@@ -361,6 +368,7 @@ export default {
 <style lang="scss" scoped>
 .element-container {
     position: relative;
+
     .bullets {
         pointer-events: all;
         position: absolute;
@@ -374,6 +382,68 @@ export default {
             height: 20px;
         }
     }
+
+    /* wwEditor:start */
+    &__status {
+        position: absolute;
+        top: -1px;
+        color: var(--ww-color-white);
+        padding: var(--ww-spacing-00) var(--ww-spacing-01);
+        border-radius: var(--ww-spacing-00);
+        background-color: var(--ww-color-blue-500);
+        z-index: 10;
+        opacity: 0;
+        pointer-events: none;
+        right: -1px;
+    }
+    &.selected {
+        > .element-container__status {
+            opacity: 1;
+            pointer-events: all;
+        }
+    }
+    &.editing:hover {
+        & > .border {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            border: 1px solid var(--ww-editor-color);
+            pointer-events: none;
+            z-index: 10;
+        }
+        > .element-container__menu {
+            opacity: 1;
+            pointer-events: all;
+        }
+    }
+    &__menu {
+        display: flex;
+        position: absolute;
+        top: 0px;
+        left: 5px;
+        transform: translate(-50%, -50%);
+        border-radius: 100%;
+        padding: var(--ww-spacing-01);
+        transition: opacity 0.2s ease;
+        z-index: 101;
+        cursor: pointer;
+        background-color: var(--ww-color-blue-500);
+        color: var(--ww-color-white);
+        justify-content: center;
+        align-items: center;
+        opacity: 0;
+        pointer-events: none;
+        &:after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%) rotate(45deg);
+        }
+    }
+    /* wwEditor:end */
 }
 .swiper-container {
     width: 100%;

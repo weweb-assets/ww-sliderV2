@@ -14,7 +14,7 @@ const options = content => {
             },
             options: {
                 min: 1,
-                max: 6,
+                max: content.mainLayoutContent.length,
                 step: 1,
             },
         },
@@ -25,7 +25,7 @@ const options = content => {
                 fr: 'Space between',
             },
             options: {
-                unitChoices: [{ value: 'px', label: 'px', min: 1, max: 1000 }],
+                unitChoices: [{ value: 'px', label: 'px' }],
             },
         },
         effect: {
