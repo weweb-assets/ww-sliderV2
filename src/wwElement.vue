@@ -147,6 +147,15 @@ export default {
             value = value.substring(0, value.length - 1);
             return parseInt(value);
         },
+        handleSlidePerView() {
+            if (this.content.slidesPerView > this.content.slides.items.length) {
+                return this.content.slides.items.length;
+            } else if (this.content.slidesPerView < 1) {
+                return 1;
+            } else {
+                return this.content.slidesPerView;
+            }
+        },
         cssVariables() {
             return {
                 '--timing-function': this.content.linearTransition ? 'linear' : 'auto',
@@ -156,10 +165,9 @@ export default {
     watch: {
         /* wwEditor:start */
         'content.slides.items': async function (newValue, oldValue) {
-            this.swiperInstance.destroy(true, true);
-
             // To avoid a duplicate content effect. No better solution for now
             if (this.content.mainLayoutContent.length !== newValue.length) {
+                this.swiperInstance.destroy(true, true);
                 if (newValue && oldValue && newValue.length > oldValue.length) {
                     const mainLayoutContent = [...this.content.mainLayoutContent];
                     if (mainLayoutContent[this.content.slides.items.length - 2]) {
@@ -173,10 +181,13 @@ export default {
                     }
 
                     this.$emit('update:content', { mainLayoutContent });
+                    this.initSwiper();
                 }
             }
 
             if (this.content.slides.target) {
+                this.swiperInstance.destroy(true, true);
+
                 const mainLayoutContent = [...this.content.mainLayoutContent];
                 mainLayoutContent.splice(this.content.slides.target, 1);
 
@@ -184,73 +195,63 @@ export default {
                     mainLayoutContent,
                     slides: { ...this.content.slides, target: null },
                 });
-            }
 
-            this.$nextTick(() => {
                 this.initSwiper();
-            });
+            }
         },
         isEditing() {
             this.swiperInstance.destroy(true, true);
-
-            this.$nextTick(() => {
-                this.initSwiper();
-            });
-        },
-        'content.direction'() {
-            this.swiperInstance.destroy(true, true);
-            this.$nextTick(() => {
-                this.initSwiper();
-            });
-        },
-        'content.effect'() {
-            this.swiperInstance.destroy(true, true);
-            this.$nextTick(() => {
-                this.initSwiper();
-            });
+            this.initSwiper();
         },
         'content.slides'() {
             this.swiperInstance.destroy(true, true);
-            this.$nextTick(() => {
-                this.initSwiper();
-                this.currentSlide = this.content.slides.items.findIndex(item => item.checked);
+            this.initSwiper();
+            this.currentSlide = this.content.slides.items.findIndex(item => item.checked);
 
-                this.swiperInstance.slideTo(this.currentSlide, 0, false);
-            });
+            this.swiperInstance.slideTo(this.currentSlide, 0, false);
+        },
+        'content.direction'() {
+            this.swiperInstance.destroy(true, true);
+            this.initSwiper();
+        },
+        'content.effect'() {
+            this.swiperInstance.destroy(true, true);
+            this.initSwiper();
         },
         'content.slidesPerView'() {
             this.swiperInstance.destroy(true, true);
-            this.$nextTick(() => {
+
+            if (this.content.slidesPerView > this.content.slides.items.length) {
+                this.$emit('update:content', { slidesPerView: this.content.slides.items.length });
+            } else if (this.content.slidesPerView < 1) {
+                this.$emit('update:content', { slidesPerView: 1 });
+            }
+
+            setTimeout(() => {
                 this.initSwiper();
-            });
+            }, 100);
         },
         'content.spaceBetween'() {
             this.swiperInstance.destroy(true, true);
-            this.$nextTick(() => {
-                this.initSwiper();
-            });
+            this.initSwiper();
         },
         'content.loop'() {
             this.swiperInstance.destroy(true, true);
-            this.$nextTick(() => {
-                if (!this.content.loop) {
-                    this.$emit('update:content', { automatic: false });
-                }
-                this.initSwiper();
-            });
+            if (!this.content.loop) {
+                this.$emit('update:content', { automatic: false });
+            }
+            this.initSwiper();
         },
         'content.automaticTiming'() {
             this.swiperInstance.destroy(true, true);
-            this.$nextTick(() => {
-                if (this.content.automatic) {
-                    this.$emit('update:content', { loop: true });
-                    this.automate();
-                } else {
-                    this.$emit('update:content', { loop: false });
-                    clearInterval(this.intervalHolder);
-                }
-                this.initSwiper();
-            });
+            if (this.content.automatic) {
+                this.$emit('update:content', { loop: true });
+                this.automate();
+            } else {
+                this.$emit('update:content', { loop: false });
+                clearInterval(this.intervalHolder);
+            }
+            this.initSwiper();
         },
         'content.automatic'() {
             this.swiperInstance.destroy(true, true);
@@ -287,19 +288,19 @@ export default {
                               crossFade: true,
                           }
                         : null,
-                slidesPerView: this.content.slidesPerView,
+                slidesPerView: this.handleSlidePerView,
                 spaceBetween: parseInt(this.content.spaceBetween.slice(0, -2)),
                 loop: this.content.loop,
                 allowTouchMove: this.isEditing ? false : true,
                 freeMode: this.content.linearTransition ? true : false,
             });
             try {
-                this.$nextTick(() => {
+                if (this.swiperInstance) {
                     this.sliderIndex = this.swiperInstance.realIndex;
                     this.swiperInstance.on('activeIndexChange', () => {
                         this.sliderIndex = this.swiperInstance.realIndex;
                     });
-                });
+                }
             } catch (error) {
                 wwLib.wwLog.error('Slider instance not found:', error);
             }
@@ -341,9 +342,7 @@ export default {
             }
 
             this.swiperInstance.destroy(true, true);
-            this.$nextTick(() => {
-                this.initSwiper();
-            });
+            this.initSwiper();
         },
         /* wwEditor:end */
         slideTo(index) {
