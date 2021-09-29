@@ -1,12 +1,7 @@
 <template>
     <div class="element-container" :style="cssVariables" :class="{ editing: isEditing, selected: isSelected }">
         <div class="swiper-container" :class="'swiper-free-mode ' + 'unique-swipper-container-' + uniqueID">
-            <wwLayout
-                disable-drag-drop="true"
-                path="mainLayoutContent"
-                class="swiper-wrapper"
-                @update:list="handleUpdate($event)"
-            >
+            <wwLayout disable-drag-drop="true" path="mainLayoutContent" class="swiper-wrapper">
                 <template #default="{ item }">
                     <wwLayoutItem class="swiper-slide">
                         <wwElement class="slide-container" v-bind="item" />
@@ -56,45 +51,6 @@ export default {
         /* wwEditor:end */
     },
     emits: ['update:content'],
-    wwDefaultContent: {
-        slides: {
-            items: [
-                {
-                    checked: true,
-                    index: 0,
-                },
-                {
-                    checked: false,
-                    index: 1,
-                },
-                {
-                    checked: false,
-                    index: 2,
-                },
-            ],
-            target: null,
-        },
-        slidesContainer: [],
-        mainLayoutContent: [
-            wwLib.element({ type: 'ww-flexbox', content: { direction: 'column' } }),
-            wwLib.element({ type: 'ww-flexbox', content: { direction: 'column' } }),
-            wwLib.element({ type: 'ww-flexbox', content: { direction: 'column' } }),
-        ],
-        bulletsLayout: [],
-        bulletsLayoutStates: [],
-        slidesPerView: wwLib.responsive(1),
-        effect: 'slide',
-        transitionDuration: '400ms',
-        automaticTiming: '3s',
-        navigation: true,
-        loop: false,
-        pagination: true,
-        spaceBetween: wwLib.responsive('0px'),
-        navigationIcons: [wwLib.element('ww-icon'), wwLib.element('ww-icon')],
-        bulletsIcons: wwLib.element('ww-icon'),
-        automatic: false,
-        linearTransition: false,
-    },
     /* wwEditor:start */
     wwEditorConfiguration({ content }) {
         return getSettingsConfigurations(content);
@@ -124,18 +80,21 @@ export default {
             // eslint-disable-next-line no-unreachable
             return false;
         },
+        nbOfSlides() {
+            return this.content.mainLayoutContent.length;
+        },
         showLeftNav() {
             const isFirst = this.sliderIndex > 0 || this.content.loop;
 
             return this.content.navigation && isFirst;
         },
         showRightNav() {
-            const isLast = this.sliderIndex < this.content.slides.items.length - 1 || this.content.loop;
+            const isLast = this.sliderIndex < this.nbOfSlides - 1 || this.content.loop;
 
             return this.content.navigation && isLast;
         },
         bullets() {
-            return this.content.slides.items.length - this.content.slidesPerView + 1;
+            return this.nbOfSlides - this.content.slidesPerView + 1;
         },
         transitionDuration() {
             let value = this.content.transitionDuration;
@@ -148,8 +107,8 @@ export default {
             return parseInt(value);
         },
         handleSlidePerView() {
-            if (this.content.slidesPerView > this.content.slides.items.length) {
-                return this.content.slides.items.length;
+            if (this.content.slidesPerView > this.nbOfSlides) {
+                return this.nbOfSlides;
             } else if (this.content.slidesPerView < 1) {
                 return 1;
             } else {
@@ -164,49 +123,14 @@ export default {
     },
     watch: {
         /* wwEditor:start */
-        'content.slides.items': async function (newValue, oldValue) {
-            // To avoid a duplicate content effect. No better solution for now
-            if (this.content.mainLayoutContent.length !== newValue.length) {
-                this.swiperInstance.destroy(true, true);
-                if (newValue && oldValue && newValue.length > oldValue.length) {
-                    const mainLayoutContent = [...this.content.mainLayoutContent];
-                    if (mainLayoutContent[this.content.slides.items.length - 2]) {
-                        mainLayoutContent[this.content.slides.items.length - 1] =
-                            await wwLib.wwObjectHelper.cloneElement(
-                                mainLayoutContent[this.content.slides.items.length - 2].uid
-                            );
-                    } else {
-                        mainLayoutContent[this.content.slides.items.length - 1] =
-                            await wwLib.wwObjectHelper.cloneElement(mainLayoutContent[0].uid);
-                    }
-
-                    this.$emit('update:content', { mainLayoutContent });
-                    this.initSwiper();
-                }
-            }
-
-            if (this.content.slides.target) {
-                this.swiperInstance.destroy(true, true);
-
-                const mainLayoutContent = [...this.content.mainLayoutContent];
-                mainLayoutContent.splice(this.content.slides.target, 1);
-
-                this.$emit('update:content', {
-                    mainLayoutContent,
-                    slides: { ...this.content.slides, target: null },
-                });
-
-                this.initSwiper();
-            }
-        },
         isEditing() {
             this.swiperInstance.destroy(true, true);
             this.initSwiper();
         },
-        'content.slides'() {
+        'wwEditorState.sidepanelContent.slideIndex'(index) {
             this.swiperInstance.destroy(true, true);
             this.initSwiper();
-            this.currentSlide = this.content.slides.items.findIndex(item => item.checked);
+            this.currentSlide = index;
 
             this.swiperInstance.slideTo(this.currentSlide, 0, false);
         },
@@ -221,8 +145,8 @@ export default {
         'content.slidesPerView'() {
             this.swiperInstance.destroy(true, true);
 
-            if (this.content.slidesPerView > this.content.slides.items.length) {
-                this.$emit('update:content', { slidesPerView: this.content.slides.items.length });
+            if (this.content.slidesPerView > this.nbOfSlides) {
+                this.$emit('update:content', { slidesPerView: this.nbOfSlides });
             } else if (this.content.slidesPerView < 1) {
                 this.$emit('update:content', { slidesPerView: 1 });
             }
@@ -269,7 +193,6 @@ export default {
         /* wwEditor:end */
     },
     mounted() {
-        this.$emit('update:content', { numberOfSlides: this.content.slides.items.length });
         this.initSwiper();
         if (this.content.automatic) {
             this.automate();
@@ -306,42 +229,27 @@ export default {
             }
         },
         /* wwEditor:start */
-        handleUpdate(event) {
-            if (event.type === 'add') {
-                const oldSize = this.content.slides.items.length;
-                const newSlidesItems = [];
-                for (let i = 0; i < oldSize + 1; i++) {
-                    newSlidesItems.push({
-                        checked: i === event.index,
-                        index: i,
-                    });
-                }
-                this.$emit('update:content', {
-                    slides: {
-                        items: newSlidesItems,
-                        target: null,
-                    },
-                });
-                this.slideTo(event.index);
-            } else if (event.type === 'remove') {
-                const oldSize = this.content.slides.items.length;
-                const newSlidesItems = [];
-                for (let i = 0; i < oldSize - 1; i++) {
-                    newSlidesItems.push({
-                        checked: i === 0,
-                        index: i,
-                    });
-                }
+        async addSlide() {
+            const mainLayoutContent = [...this.content.mainLayoutContent];
 
-                this.$emit('update:content', {
-                    slides: {
-                        items: newSlidesItems,
-                        target: null,
-                    },
-                });
+            if (mainLayoutContent.length === 0) {
+                const slide = await wwLib.createElememt('ww-flexbox');
+                mainLayoutContent.push(slide);
+            } else {
+                const slide = await wwLib.wwObjectHelper.cloneElement(
+                    mainLayoutContent[mainLayoutContent.length - 1].uid
+                );
+                mainLayoutContent.push(slide);
             }
 
-            this.swiperInstance.destroy(true, true);
+            this.$emit('update:content', { mainLayoutContent });
+            this.initSwiper();
+        },
+        removeSlide(index) {
+            const mainLayoutContent = [...this.content.mainLayoutContent];
+            mainLayoutContent.splice(index, 1);
+
+            this.$emit('update:content', { mainLayoutContent });
             this.initSwiper();
         },
         /* wwEditor:end */
