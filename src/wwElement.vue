@@ -39,10 +39,6 @@
 import Swiper from 'swiper/bundle';
 import 'swiper/swiper-bundle.css';
 
-/* wwEditor:start */
-import { getSettingsConfigurations } from './configuration';
-/* wwEditor:end */
-
 export default {
     props: {
         content: { type: Object, required: true },
@@ -51,11 +47,6 @@ export default {
         /* wwEditor:end */
     },
     emits: ['update:content'],
-    /* wwEditor:start */
-    wwEditorConfiguration({ content }) {
-        return getSettingsConfigurations(content);
-    },
-    /* wwEditor:end */
     data() {
         return {
             swiperInstance: null,
