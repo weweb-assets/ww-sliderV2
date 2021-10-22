@@ -11,7 +11,7 @@
         </div>
 
         <div v-show="content.pagination" class="bullets">
-            <div v-for="index in Math.ceil(bullets)" :key="index" class="bullet-container" @click="slideTo(index - 1)">
+            <div v-for="index in Math.ceil(bullets)" :key="index" class="bullet-container" @click="slideTo(index)">
                 <wwElement
                     class="bulletIcon"
                     v-bind="content.bulletsIcons"
