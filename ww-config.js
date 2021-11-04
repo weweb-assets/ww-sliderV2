@@ -3,6 +3,7 @@ export default {
         label: {
             en: 'Slider',
         },
+        icon: 'slider',
         menuOptions: {
             quick: {
                 label: {

@@ -1,5 +1,5 @@
 <template>
-    <div class="element-container" :style="cssVariables" :class="{ editing: isEditing, selected: isSelected }">
+    <div class="ww-sliderv2-container" :style="cssVariables" :class="{ editing: isEditing, selected: isSelected }">
         <div class="swiper-container" :class="'swiper-free-mode ' + 'unique-swipper-container-' + uniqueID">
             <wwLayout disable-drag-drop="true" path="mainLayoutContent" class="swiper-wrapper">
                 <template #default="{ item }">
@@ -11,7 +11,7 @@
         </div>
 
         <div v-show="content.pagination" class="bullets">
-            <div v-for="index in Math.ceil(bullets)" :key="index" class="bullet-container" @click="slideTo(index)">
+            <div v-for="index in Math.ceil(bullets)" :key="index" class="bullet-container" @click="slideTo(index - 1)">
                 <wwElement
                     class="bulletIcon"
                     v-bind="content.bulletsIcons"
@@ -19,16 +19,13 @@
                 />
             </div>
         </div>
-        <div v-show="showLeftNav" class="navigation-container prev" @click="slidePrev">
-            <wwElement class="layout-prev" v-bind="content.navigationIcons[0]" />
-        </div>
-        <div v-show="showRightNav" class="navigation-container next" @click="slideNext">
-            <wwElement class="layout-next" v-bind="content.navigationIcons[1]" />
-        </div>
+
+        <wwElement v-if="showLeftNav" class="layout-prev" v-bind="content.navigationIcons[0]" @click="slidePrev" />
+        <wwElement v-if="showRightNav" class="layout-next" v-bind="content.navigationIcons[1]" @click="slideNext" />
 
         <!-- wwEditor:start -->
-        <div class="element-container__status label-xs">Slide {{ sliderIndex + 1 }}</div>
-        <div class="element-container__menu">
+        <div class="ww-sliderv2-container__status label-xs">Slide {{ sliderIndex + 1 }}</div>
+        <div class="ww-sliderv2-container__menu">
             <wwEditorIcon small name="slider" />
         </div>
         <!-- wwEditor:end -->
@@ -264,8 +261,8 @@ export default {
 };
 </script>
 
-<style lang="scss" scoped>
-.element-container {
+<style lang="scss">
+.ww-sliderv2-container {
     position: relative;
 
     .bullets {
@@ -296,7 +293,7 @@ export default {
         right: -1px;
     }
     &.selected {
-        > .element-container__status {
+        > .ww-sliderv2-container__status {
             opacity: 1;
             pointer-events: all;
         }
@@ -312,7 +309,7 @@ export default {
             pointer-events: none;
             z-index: 10;
         }
-        > .element-container__menu {
+        > .ww-sliderv2-container__menu {
             opacity: 1;
             pointer-events: all;
         }
@@ -343,18 +340,36 @@ export default {
         }
     }
     /* wwEditor:end */
+
+    .layout-prev {
+        width: 100px;
+        position: absolute;
+        top: 50%;
+        left: 0;
+        transform: translateY(-50%);
+        z-index: 2;
+    }
+    .layout-next {
+        width: 100px;
+        position: absolute;
+        top: 50%;
+        right: 0;
+        transform: translateY(-50%);
+        z-index: 2;
+    }
 }
+
 .swiper-container {
     width: 100%;
     height: 100%;
 }
 .swiper-wrapper {
     position: relative;
-
     .slide-container {
         width: 100%;
     }
 }
+
 .swiper-free-mode > .swiper-wrapper {
     transition-timing-function: var(--timing-function);
 }
@@ -368,14 +383,10 @@ export default {
     display: -ms-flexbox;
     display: -webkit-flex;
     display: flex;
-    -webkit-box-pack: center;
-    -ms-flex-pack: center;
-    -webkit-justify-content: center;
+    flex-direction: column;
     justify-content: center;
-    -webkit-box-align: center;
-    -ms-flex-align: center;
-    -webkit-align-items: center;
-    align-items: center;
+    align-items: stretch;
+
     .slide-layout {
         width: 100%;
         height: 100%;
@@ -383,22 +394,6 @@ export default {
         flex-direction: column;
         justify-content: center;
         align-items: stretch;
-    }
-}
-
-.navigation-container {
-    width: 100px;
-    position: absolute;
-    top: 50%;
-    
-    transform: translateY(-50%);
-    z-index: 2;
-
-    &.prev {
-        left: 0;
-    }
-    &.next {
-        right: 0;
     }
 }
 </style>
