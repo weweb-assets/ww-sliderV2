@@ -11,7 +11,7 @@
         </div>
 
         <div v-show="content.pagination" class="bullets">
-            <div v-for="index in Math.ceil(bullets)" :key="index" class="bullet-container" @click="slideTo(index - 1)">
+            <div v-for="index in Math.ceil(bullets)" :key="index" class="bullet-container" @click="slideTo(index)">
                 <wwElement
                     class="bulletIcon"
                     v-bind="content.bulletsIcons"
@@ -19,10 +19,10 @@
                 />
             </div>
         </div>
-        <div v-show="showLeftNav" class="navigation-container" @click="slidePrev">
+        <div v-show="showLeftNav" class="navigation-container prev" @click="slidePrev">
             <wwElement class="layout-prev" v-bind="content.navigationIcons[0]" />
         </div>
-        <div v-show="showRightNav" class="navigation-container" @click="slideNext">
+        <div v-show="showRightNav" class="navigation-container next" @click="slideNext">
             <wwElement class="layout-next" v-bind="content.navigationIcons[1]" />
         </div>
 
@@ -385,20 +385,20 @@ export default {
         align-items: stretch;
     }
 }
-.layout-prev {
+
+.navigation-container {
     width: 100px;
     position: absolute;
     top: 50%;
-    left: 0;
+    
     transform: translateY(-50%);
     z-index: 2;
-}
-.layout-next {
-    width: 100px;
-    position: absolute;
-    top: 50%;
-    right: 0;
-    transform: translateY(-50%);
-    z-index: 2;
+
+    &.prev {
+        left: 0;
+    }
+    &.next {
+        right: 0;
+    }
 }
 </style>
