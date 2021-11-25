@@ -54,8 +54,9 @@ export default {
     },
     emits: ['update:content', 'update:sidepanel-content'],
     setup() {
-        const swiperInstance = null;
-        return swiperInstance;
+        return {
+            swiperInstance: null,
+        };
     },
     data() {
         return {
