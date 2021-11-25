@@ -9,9 +9,6 @@
         "build": "weweb build",
         "serve": "weweb serve"
     },
-    "dependencies": {
-        "swiper": "^6.8.4"
-    },
     "devDependencies": {
         "@vue/eslint-config-prettier": "^6.0.0",
         "@weweb/cli": "github:weweb-team/weweb-cli#webapp",
@@ -21,5 +18,8 @@
         "eslint-plugin-vue": "7.0.0-beta.4",
         "prettier": "^2.1.2"
     },
-    "license": "MIT"
+    "license": "MIT",
+    "dependencies": {
+        "swiper": "^7.3.1"
+    }
 }
