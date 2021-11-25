@@ -53,9 +53,13 @@ export default {
         /* wwEditor:end */
     },
     emits: ['update:content', 'update:sidepanel-content'],
-    data() {
+    setup() {
         return {
             swiperInstance: null,
+        };
+    },
+    data() {
+        return {
             sliderIndex: 0,
             uniqueID: wwLib.wwUtils.getUniqueId(),
             intervalHolder: null,
