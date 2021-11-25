@@ -70,6 +70,9 @@ export default {
                 options: [
                     { value: 'slide', label: { en: 'slide' } },
                     { value: 'fade', label: { en: 'fade' } },
+                    { value: 'coverflow', label: { en: 'coverflow' } },
+                    { value: 'flip', label: { en: 'flip' } },
+                    { value: 'cards', label: { en: 'cards' } },
                 ],
             },
             defaultValue: 'slide',

@@ -1,6 +1,6 @@
 <template>
     <div class="element-container" :style="cssVariables" :class="{ editing: isEditing, selected: isSelected }">
-        <div class="swiper-container" :data-swiper-id="uniqueID">
+        <div class="swiper" :data-swiper-id="uniqueID">
             <wwLayout disable-drag-drop="true" path="mainLayoutContent" class="swiper-wrapper">
                 <template #default="{ item }">
                     <wwLayoutItem class="swiper-slide">
@@ -42,8 +42,14 @@
 </template>
 
 <script>
-import Swiper from 'swiper/bundle';
-import 'swiper/swiper-bundle.css';
+import Swiper, { EffectFlip, EffectFade, EffectCreative, EffectCoverflow, EffectCube, EffectCards } from 'swiper';
+import 'swiper/swiper.min.css';
+import 'swiper/modules/effect-fade/effect-fade.min.css';
+import 'swiper/modules/effect-creative/effect-creative.min.css';
+import 'swiper/modules/effect-coverflow/effect-coverflow.min.css';
+import 'swiper/modules/effect-cards/effect-cards.min.css';
+import 'swiper/modules/effect-flip/effect-flip.min.css';
+import 'swiper/modules/effect-cube/effect-cube.min.css';
 
 export default {
     props: {
@@ -118,13 +124,9 @@ export default {
         },
         swiperOptions() {
             return {
+                modules: [EffectFlip, EffectFade, EffectCreative, EffectCoverflow, EffectCube, EffectCards],
                 effect: this.content.effect,
-                fadeEffect:
-                    this.content.effect === 'fade'
-                        ? {
-                              crossFade: true,
-                          }
-                        : null,
+                creativeEffect: this.creativeEffect,
                 slidesPerView: this.slidesPerView,
                 spaceBetween: parseInt(this.content.spaceBetween.slice(0, -2)),
                 loop: this.isLoop,
@@ -167,7 +169,7 @@ export default {
         /* wwEditor:end */
     },
     mounted() {
-        this.initSwiper();
+        this.initSwiper(false);
         /* wwFront:start */
         if (this.content.automatic) {
             this.startAutomate();
@@ -179,14 +181,14 @@ export default {
         if (this.intervalHolder) clearInterval(this.intervalHolder);
     },
     methods: {
-        initSwiper() {
+        initSwiper(resetIndex = true) {
             if (this.swiperInstance) this.swiperInstance.destroy(true, true);
             this.swiperInstance = new Swiper(`[data-swiper-id="${this.uniqueID}"]`, this.swiperOptions);
             this.sliderIndex = this.swiperInstance.activeIndex;
             this.swiperInstance.on('activeIndexChange', () => {
                 this.sliderIndex = this.swiperInstance.activeIndex;
             });
-            this.slideTo(0);
+            if (resetIndex) this.slideTo(0);
         },
         /* wwEditor:start */
         async addSlide() {
@@ -319,7 +321,7 @@ export default {
     }
     /* wwEditor:end */
 }
-.swiper-container {
+.swiper {
     width: 100%;
     height: 100%;
 }
