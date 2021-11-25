@@ -106,6 +106,7 @@ export default {
             section: 'settings',
         },
         loop: {
+            hidden: content => content.automatic,
             type: 'OnOff',
             label: {
                 en: 'Loop',
@@ -158,21 +159,16 @@ export default {
                 { isWwObject: true, type: 'ww-flexbox', content: { direction: 'column' } },
             ],
         },
-        bulletsLayout: {
-            hidden: true,
-            defaultValue: [],
-        },
-        bulletsLayoutStates: {
-            hidden: true,
-            defaultValue: [],
-        },
         navigationIcons: {
             hidden: true,
-            defaultValue: [{isWwObject: true, type: "ww-icon"}, {isWwObject: true, type: "ww-icon"}],
+            defaultValue: [
+                { isWwObject: true, type: 'ww-icon' },
+                { isWwObject: true, type: 'ww-icon' },
+            ],
         },
         bulletsIcons: {
             hidden: true,
-            defaultValue: {isWwObject: true, type: "ww-icon"},
+            defaultValue: { isWwObject: true, type: 'ww-icon' },
         },
     },
 };
