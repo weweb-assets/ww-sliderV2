@@ -237,16 +237,6 @@ export default {
             if (this.intervalHolder) clearInterval(this.intervalHolder);
             this.intervalHolder = null;
         },
-        getCreativeObject(content) {
-            if (!content) return {};
-            let object = {};
-            for (let item of content) {
-                if (item && item.property) {
-                    object[item.property] = item.value || '';
-                }
-            }
-            return object;
-        },
     },
 };
 </script>
