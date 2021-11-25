@@ -1,12 +1,7 @@
 <template>
     <div class="element-container" :style="cssVariables" :class="{ editing: isEditing, selected: isSelected }">
-        <div class="swiper-container" :class="'swiper-free-mode ' + 'unique-swipper-container-' + uniqueID">
-            <wwLayout
-                disable-drag-drop="true"
-                path="mainLayoutContent"
-                class="swiper-wrapper"
-                @update:list="handleUpdate($event)"
-            >
+        <div class="swiper-container" :data-swiper-id="uniqueID">
+            <wwLayout disable-drag-drop="true" path="mainLayoutContent" class="swiper-wrapper">
                 <template #default="{ item }">
                     <wwLayoutItem class="swiper-slide">
                         <wwElement class="slide-container" v-bind="item" />
@@ -16,7 +11,12 @@
         </div>
 
         <div v-show="content.pagination" class="bullets">
-            <div v-for="index in Math.ceil(bullets)" :key="index" class="bullet-container" @click="slideTo(index - 1)">
+            <div
+                v-for="index in numberOfBullets"
+                :key="index"
+                class="bullet-container"
+                @click="onBulletClick(index - 1)"
+            >
                 <wwElement
                     class="bulletIcon"
                     v-bind="content.bulletsIcons"
@@ -24,10 +24,11 @@
                 />
             </div>
         </div>
-        <div v-show="showLeftNav" class="navigation-container" @click="slidePrev">
+
+        <div v-show="showLeftNav" class="navigation-container prev" @click="slidePrev">
             <wwElement class="layout-prev" v-bind="content.navigationIcons[0]" />
         </div>
-        <div v-show="showRightNav" class="navigation-container" @click="slideNext">
+        <div v-show="showRightNav" class="navigation-container next" @click="slideNext">
             <wwElement class="layout-next" v-bind="content.navigationIcons[1]" />
         </div>
 
@@ -44,10 +45,6 @@
 import Swiper from 'swiper/bundle';
 import 'swiper/swiper-bundle.css';
 
-/* wwEditor:start */
-import { getSettingsConfigurations } from './configuration';
-/* wwEditor:end */
-
 export default {
     props: {
         content: { type: Object, required: true },
@@ -55,57 +52,12 @@ export default {
         wwEditorState: { type: Object, required: true },
         /* wwEditor:end */
     },
-    emits: ['update:content'],
-    wwDefaultContent: {
-        slides: {
-            items: [
-                {
-                    checked: true,
-                    index: 0,
-                },
-                {
-                    checked: false,
-                    index: 1,
-                },
-                {
-                    checked: false,
-                    index: 2,
-                },
-            ],
-            target: null,
-        },
-        slidesContainer: [],
-        mainLayoutContent: [
-            wwLib.element({ type: 'ww-flexbox', content: { direction: 'column' } }),
-            wwLib.element({ type: 'ww-flexbox', content: { direction: 'column' } }),
-            wwLib.element({ type: 'ww-flexbox', content: { direction: 'column' } }),
-        ],
-        bulletsLayout: [],
-        bulletsLayoutStates: [],
-        slidesPerView: wwLib.responsive(1),
-        effect: 'slide',
-        transitionDuration: '400ms',
-        automaticTiming: '3s',
-        navigation: true,
-        loop: false,
-        pagination: true,
-        spaceBetween: wwLib.responsive('0px'),
-        navigationIcons: [wwLib.element('ww-icon'), wwLib.element('ww-icon')],
-        bulletsIcons: wwLib.element('ww-icon'),
-        automatic: false,
-        linearTransition: false,
-    },
-    /* wwEditor:start */
-    wwEditorConfiguration({ content }) {
-        return getSettingsConfigurations(content);
-    },
-    /* wwEditor:end */
+    emits: ['update:content', 'update:sidepanel-content'],
     data() {
         return {
             swiperInstance: null,
-            slidesLength: 0,
             sliderIndex: 0,
-            uniqueID: 0,
+            uniqueID: wwLib.wwUtils.getUniqueId(),
             intervalHolder: null,
         };
     },
@@ -124,18 +76,22 @@ export default {
             // eslint-disable-next-line no-unreachable
             return false;
         },
+        nbOfSlides() {
+            return this.content.mainLayoutContent.length;
+        },
+        isLoop() {
+            return this.content.automatic || this.content.loop;
+        },
         showLeftNav() {
-            const isFirst = this.sliderIndex > 0 || this.content.loop;
-
-            return this.content.navigation && isFirst;
+            const hasPrevious = this.sliderIndex > 0 || this.isLoop;
+            return this.content.navigation && hasPrevious;
         },
         showRightNav() {
-            const isLast = this.sliderIndex < this.content.slides.items.length - 1 || this.content.loop;
-
-            return this.content.navigation && isLast;
+            const hasNext = this.sliderIndex < this.nbOfSlides - 1 || this.isLoop;
+            return this.content.navigation && hasNext;
         },
-        bullets() {
-            return this.content.slides.items.length - this.content.slidesPerView + 1;
+        numberOfBullets() {
+            return Math.ceil(this.nbOfSlides - this.slidesPerView + 1);
         },
         transitionDuration() {
             let value = this.content.transitionDuration;
@@ -147,14 +103,30 @@ export default {
             value = value.substring(0, value.length - 1);
             return parseInt(value);
         },
-        handleSlidePerView() {
-            if (this.content.slidesPerView > this.content.slides.items.length) {
-                return this.content.slides.items.length;
+        slidesPerView() {
+            if (this.content.slidesPerView > this.nbOfSlides) {
+                return this.nbOfSlides;
             } else if (this.content.slidesPerView < 1) {
                 return 1;
             } else {
                 return this.content.slidesPerView;
             }
+        },
+        swiperOptions() {
+            return {
+                effect: this.content.effect,
+                fadeEffect:
+                    this.content.effect === 'fade'
+                        ? {
+                              crossFade: true,
+                          }
+                        : null,
+                slidesPerView: this.slidesPerView,
+                spaceBetween: parseInt(this.content.spaceBetween.slice(0, -2)),
+                loop: this.isLoop,
+                allowTouchMove: !this.isEditing,
+                freeMode: this.content.linearTransition,
+            };
         },
         cssVariables() {
             return {
@@ -164,189 +136,82 @@ export default {
     },
     watch: {
         /* wwEditor:start */
-        'content.slides.items': async function (newValue, oldValue) {
-            // To avoid a duplicate content effect. No better solution for now
-            if (this.content.mainLayoutContent.length !== newValue.length) {
-                this.swiperInstance.destroy(true, true);
-                if (newValue && oldValue && newValue.length > oldValue.length) {
-                    const mainLayoutContent = [...this.content.mainLayoutContent];
-                    if (mainLayoutContent[this.content.slides.items.length - 2]) {
-                        mainLayoutContent[this.content.slides.items.length - 1] =
-                            await wwLib.wwObjectHelper.cloneElement(
-                                mainLayoutContent[this.content.slides.items.length - 2].uid
-                            );
-                    } else {
-                        mainLayoutContent[this.content.slides.items.length - 1] =
-                            await wwLib.wwObjectHelper.cloneElement(mainLayoutContent[0].uid);
-                    }
-
-                    this.$emit('update:content', { mainLayoutContent });
-                    this.initSwiper();
-                }
-            }
-
-            if (this.content.slides.target) {
-                this.swiperInstance.destroy(true, true);
-
-                const mainLayoutContent = [...this.content.mainLayoutContent];
-                mainLayoutContent.splice(this.content.slides.target, 1);
-
-                this.$emit('update:content', {
-                    mainLayoutContent,
-                    slides: { ...this.content.slides, target: null },
-                });
-
-                this.initSwiper();
-            }
-        },
         isEditing() {
-            this.swiperInstance.destroy(true, true);
             this.initSwiper();
-        },
-        'content.slides'() {
-            this.swiperInstance.destroy(true, true);
-            this.initSwiper();
-            this.currentSlide = this.content.slides.items.findIndex(item => item.checked);
-
-            this.swiperInstance.slideTo(this.currentSlide, 0, false);
-        },
-        'content.direction'() {
-            this.swiperInstance.destroy(true, true);
-            this.initSwiper();
-        },
-        'content.effect'() {
-            this.swiperInstance.destroy(true, true);
-            this.initSwiper();
-        },
-        'content.slidesPerView'() {
-            this.swiperInstance.destroy(true, true);
-
-            if (this.content.slidesPerView > this.content.slides.items.length) {
-                this.$emit('update:content', { slidesPerView: this.content.slides.items.length });
-            } else if (this.content.slidesPerView < 1) {
-                this.$emit('update:content', { slidesPerView: 1 });
+            if (this.content.automatic && !this.isEditing) {
+                this.startAutomate();
+            } else if (this.isEditing) {
+                this.stopAutomate();
             }
-
-            setTimeout(() => {
-                this.initSwiper();
-            }, 100);
         },
-        'content.spaceBetween'() {
-            this.swiperInstance.destroy(true, true);
-            this.initSwiper();
+        'wwEditorState.sidepanelContent.slideIndex'(index) {
+            if (this.sliderIndex !== index) this.slideTo(index);
         },
-        'content.loop'() {
-            this.swiperInstance.destroy(true, true);
-            if (!this.content.loop) {
-                this.$emit('update:content', { automatic: false });
+        sliderIndex(index) {
+            if (this.wwEditorState.sidepanelContent.slideIndex !== index) {
+                this.$emit('update:sidepanel-content', { path: 'slideIndex', value: index });
             }
+        },
+        swiperOptions() {
             this.initSwiper();
         },
-        'content.automaticTiming'() {
-            this.swiperInstance.destroy(true, true);
-            if (this.content.automatic) {
-                this.$emit('update:content', { loop: true });
-                this.automate();
-            } else {
-                this.$emit('update:content', { loop: false });
-                clearInterval(this.intervalHolder);
-            }
-            this.initSwiper();
-        },
-        'content.automatic'() {
-            this.swiperInstance.destroy(true, true);
+        'content.mainLayoutContent'() {
             this.$nextTick(() => {
-                if (this.content.automatic) {
-                    this.$emit('update:content', { loop: true });
-                    this.automate();
-                } else {
-                    this.$emit('update:content', { loop: false });
-                    clearInterval(this.intervalHolder);
-                }
                 this.initSwiper();
             });
         },
         /* wwEditor:end */
     },
     mounted() {
-        this.$emit('update:content', { numberOfSlides: this.content.slides.items.length });
         this.initSwiper();
+        /* wwFront:start */
         if (this.content.automatic) {
-            this.automate();
+            this.startAutomate();
         }
+        /* wwFront:start */
     },
-    created() {
-        this.uniqueID = wwLib.wwUtils.getUniqueId();
+    beforeUnmount() {
+        if (this.swiperInstance) this.swiperInstance.destroy(true, true);
+        if (this.intervalHolder) clearInterval(this.intervalHolder);
     },
     methods: {
         initSwiper() {
-            this.swiperInstance = new Swiper(`.unique-swipper-container-${this.uniqueID}`, {
-                effect: this.content.effect,
-                fadeEffect:
-                    this.content.effect === 'fade'
-                        ? {
-                              crossFade: true,
-                          }
-                        : null,
-                slidesPerView: this.handleSlidePerView,
-                spaceBetween: parseInt(this.content.spaceBetween.slice(0, -2)),
-                loop: this.content.loop,
-                allowTouchMove: this.isEditing ? false : true,
-                freeMode: this.content.linearTransition ? true : false,
+            if (this.swiperInstance) this.swiperInstance.destroy(true, true);
+            this.swiperInstance = new Swiper(`[data-swiper-id="${this.uniqueID}"]`, this.swiperOptions);
+            this.sliderIndex = this.swiperInstance.activeIndex;
+            this.swiperInstance.on('activeIndexChange', () => {
+                this.sliderIndex = this.swiperInstance.activeIndex;
             });
-            try {
-                if (this.swiperInstance) {
-                    this.sliderIndex = this.swiperInstance.realIndex;
-                    this.swiperInstance.on('activeIndexChange', () => {
-                        this.sliderIndex = this.swiperInstance.realIndex;
-                    });
-                }
-            } catch (error) {
-                wwLib.wwLog.error('Slider instance not found:', error);
-            }
+            this.slideTo(0);
         },
         /* wwEditor:start */
-        handleUpdate(event) {
-            if (event.type === 'add') {
-                const oldSize = this.content.slides.items.length;
-                const newSlidesItems = [];
-                for (let i = 0; i < oldSize + 1; i++) {
-                    newSlidesItems.push({
-                        checked: i === event.index,
-                        index: i,
-                    });
-                }
-                this.$emit('update:content', {
-                    slides: {
-                        items: newSlidesItems,
-                        target: null,
-                    },
-                });
-                this.slideTo(event.index);
-            } else if (event.type === 'remove') {
-                const oldSize = this.content.slides.items.length;
-                const newSlidesItems = [];
-                for (let i = 0; i < oldSize - 1; i++) {
-                    newSlidesItems.push({
-                        checked: i === 0,
-                        index: i,
-                    });
-                }
+        async addSlide() {
+            const mainLayoutContent = [...this.content.mainLayoutContent];
 
-                this.$emit('update:content', {
-                    slides: {
-                        items: newSlidesItems,
-                        target: null,
-                    },
-                });
+            if (mainLayoutContent.length === 0) {
+                const slide = await wwLib.createElement('ww-flexbox');
+                mainLayoutContent.push(slide);
+            } else {
+                const slide = await wwLib.wwObjectHelper.cloneElement(
+                    mainLayoutContent[mainLayoutContent.length - 1].uid
+                );
+                mainLayoutContent.push(slide);
             }
+            this.$emit('update:content', { mainLayoutContent });
+        },
+        removeSlide(index) {
+            const mainLayoutContent = [...this.content.mainLayoutContent];
+            mainLayoutContent.splice(index, 1);
 
-            this.swiperInstance.destroy(true, true);
-            this.initSwiper();
+            this.$emit('update:content', { mainLayoutContent });
         },
         /* wwEditor:end */
         slideTo(index) {
             this.swiperInstance.slideTo(index, this.transitionDuration, false);
+        },
+        onBulletClick(index) {
+            if (this.isEditing) return;
+            this.slideTo(index);
         },
         slideNext() {
             if (this.isEditing) return;
@@ -356,10 +221,15 @@ export default {
             if (this.isEditing) return;
             this.swiperInstance.slidePrev(this.transitionDuration);
         },
-        automate() {
+        startAutomate() {
+            this.stopAutomate();
             this.intervalHolder = setInterval(() => {
                 this.slideNext();
             }, this.automaticTiming * 1000);
+        },
+        stopAutomate() {
+            if (this.intervalHolder) clearInterval(this.intervalHolder);
+            this.intervalHolder = null;
         },
     },
 };
@@ -451,14 +321,13 @@ export default {
 }
 .swiper-wrapper {
     position: relative;
+    transition-timing-function: var(--timing-function);
 
     .slide-container {
         width: 100%;
     }
 }
-.swiper-free-mode > .swiper-wrapper {
-    transition-timing-function: var(--timing-function);
-}
+
 .swiper-slide {
     z-index: 1;
     position: relative;
@@ -469,14 +338,8 @@ export default {
     display: -ms-flexbox;
     display: -webkit-flex;
     display: flex;
-    -webkit-box-pack: center;
-    -ms-flex-pack: center;
-    -webkit-justify-content: center;
-    justify-content: center;
-    -webkit-box-align: center;
-    -ms-flex-align: center;
-    -webkit-align-items: center;
-    align-items: center;
+    flex-direction: column;
+    justify-content: stretch;
     .slide-layout {
         width: 100%;
         height: 100%;
@@ -486,20 +349,20 @@ export default {
         align-items: stretch;
     }
 }
-.layout-prev {
+
+.navigation-container {
     width: 100px;
     position: absolute;
     top: 50%;
-    left: 0;
+
     transform: translateY(-50%);
     z-index: 2;
-}
-.layout-next {
-    width: 100px;
-    position: absolute;
-    top: 50%;
-    right: 0;
-    transform: translateY(-50%);
-    z-index: 2;
+
+    &.prev {
+        left: 0;
+    }
+    &.next {
+        right: 0;
+    }
 }
 </style>
