@@ -188,7 +188,8 @@ export default {
             this.swiperInstance.on('activeIndexChange', () => {
                 this.sliderIndex = this.swiperInstance.activeIndex;
             });
-            if (resetIndex) this.slideTo(0);
+            // Test
+            // if (resetIndex) this.slideTo(0);
         },
         /* wwEditor:start */
         async addSlide() {
