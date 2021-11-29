@@ -9,7 +9,11 @@
             >
                 <template #default="{ item, index }">
                     <wwLayoutItem class="swiper-slide" :ww-responsive="`swiper-slide-${index}`">
-                        <wwElement class="slide-container" v-bind="item" />
+                        <wwElement
+                            class="slide-container"
+                            v-bind="item"
+                            :states="index !== sliderIndex ? ['Not Current Slide'] : []"
+                        />
                     </wwLayoutItem>
                 </template>
             </wwLayout>
@@ -126,17 +130,11 @@ export default {
                 return this.content.slidesPerView;
             }
         },
-        creativeEffectObject() {
-            return {
-                prev: this.content.creativePrev,
-                next: this.content.creativeNext,
-            };
-        },
         swiperOptions() {
             return {
                 modules: [EffectFlip, EffectFade, EffectCoverflow, EffectCube, EffectCards],
                 effect: this.content.effect,
-                creativeEffect: this.creativeEffectObject,
+                cardsEffect: { slideShadows: false },
                 slidesPerView: this.slidesPerView,
                 spaceBetween: parseInt(this.content.spaceBetween.slice(0, -2)),
                 loop: this.isLoop,
