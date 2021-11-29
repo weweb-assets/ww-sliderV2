@@ -135,6 +135,7 @@ export default {
                 modules: [EffectFlip, EffectFade, EffectCoverflow, EffectCube, EffectCards],
                 effect: this.content.effect,
                 cardsEffect: { slideShadows: false },
+                coverflowEffect: { slideShadows: false },
                 slidesPerView: this.slidesPerView,
                 spaceBetween: parseInt(this.content.spaceBetween.slice(0, -2)),
                 loop: this.isLoop,
