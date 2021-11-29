@@ -1,9 +1,14 @@
 <template>
     <div class="element-container" :style="cssVariables" :class="{ editing: isEditing, selected: isSelected }">
-        <div class="swiper" :data-swiper-id="uniqueID">
-            <wwLayout disable-drag-drop="true" path="mainLayoutContent" class="swiper-wrapper">
-                <template #default="{ item }">
-                    <wwLayoutItem class="swiper-slide">
+        <div class="swiper" :data-swiper-id="uniqueID" ww-responsive="swiper">
+            <wwLayout
+                disable-drag-drop="true"
+                path="mainLayoutContent"
+                class="swiper-wrapper"
+                ww-responsive="swiper-wrapper"
+            >
+                <template #default="{ item, index }">
+                    <wwLayoutItem class="swiper-slide" :ww-responsive="`swiper-slide-${index}`">
                         <wwElement class="slide-container" v-bind="item" />
                     </wwLayoutItem>
                 </template>
