@@ -42,10 +42,9 @@
 </template>
 
 <script>
-import Swiper, { EffectFlip, EffectFade, EffectCreative, EffectCoverflow, EffectCube, EffectCards } from 'swiper';
+import Swiper, { EffectFlip, EffectFade, EffectCoverflow, EffectCube, EffectCards } from 'swiper';
 import 'swiper/swiper.min.css';
 import 'swiper/modules/effect-fade/effect-fade.min.css';
-import 'swiper/modules/effect-creative/effect-creative.min.css';
 import 'swiper/modules/effect-coverflow/effect-coverflow.min.css';
 import 'swiper/modules/effect-cards/effect-cards.min.css';
 import 'swiper/modules/effect-flip/effect-flip.min.css';
@@ -122,11 +121,17 @@ export default {
                 return this.content.slidesPerView;
             }
         },
+        creativeEffectObject() {
+            return {
+                prev: this.content.creativePrev,
+                next: this.content.creativeNext,
+            };
+        },
         swiperOptions() {
             return {
-                modules: [EffectFlip, EffectFade, EffectCreative, EffectCoverflow, EffectCube, EffectCards],
+                modules: [EffectFlip, EffectFade, EffectCoverflow, EffectCube, EffectCards],
                 effect: this.content.effect,
-                creativeEffect: this.creativeEffect,
+                creativeEffect: this.creativeEffectObject,
                 slidesPerView: this.slidesPerView,
                 spaceBetween: parseInt(this.content.spaceBetween.slice(0, -2)),
                 loop: this.isLoop,
@@ -188,8 +193,7 @@ export default {
             this.swiperInstance.on('activeIndexChange', () => {
                 this.sliderIndex = this.swiperInstance.activeIndex;
             });
-            // Test
-            // if (resetIndex) this.slideTo(0);
+            if (resetIndex) this.slideTo(0);
         },
         /* wwEditor:start */
         async addSlide() {
