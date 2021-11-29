@@ -66,7 +66,7 @@ export default {
     data() {
         return {
             sliderIndex: 0,
-            uniqueID: wwLib.wwUtils.getUniqueId(),
+            uniqueID: null,
             intervalHolder: null,
         };
     },
@@ -174,12 +174,21 @@ export default {
         /* wwEditor:end */
     },
     mounted() {
-        this.initSwiper(false);
-        /* wwFront:start */
-        if (this.content.automatic) {
-            this.startAutomate();
+        const swiperElement = this.$el.querySelector('[data-swiper-id]');
+        if (swiperElement) {
+            this.uniqueID = swiperElement.getAttribute('data-swiper-id');
+        } else {
+            this.uniqueID = wwLib.wwUtils.getUniqueId();
         }
-        /* wwFront:start */
+
+        this.$nextTick(() => {
+            this.initSwiper(false);
+            /* wwFront:start */
+            if (this.content.automatic) {
+                this.startAutomate();
+            }
+            /* wwFront:start */
+        });
     },
     beforeUnmount() {
         if (this.swiperInstance) this.swiperInstance.destroy(true, true);
