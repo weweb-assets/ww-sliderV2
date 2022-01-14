@@ -62,6 +62,7 @@ import 'swiper/modules/effect-cube/effect-cube.min.css';
 export default {
     props: {
         content: { type: Object, required: true },
+        wwFrontState: { type: Object, required: true },
         /* wwEditor:start */
         wwEditorState: { type: Object, required: true },
         /* wwEditor:end */
@@ -213,11 +214,12 @@ export default {
             const mainLayoutContent = [...this.content.mainLayoutContent];
 
             if (mainLayoutContent.length === 0) {
-                const slide = await wwLib.createElement('ww-flexbox');
+                const slide = await wwLib.createElement('ww-flexbox', {}, {}, this.wwFrontState.sectionId);
                 mainLayoutContent.push(slide);
             } else {
                 const slide = await wwLib.wwObjectHelper.cloneElement(
-                    mainLayoutContent[mainLayoutContent.length - 1].uid
+                    mainLayoutContent[mainLayoutContent.length - 1].uid,
+                    this.wwFrontState.sectionId
                 );
                 mainLayoutContent.push(slide);
             }
