@@ -13,6 +13,9 @@ export default {
                 sections: ['slideIndex'],
             },
         },
+        bubble: {
+            icon: 'slider',
+        },
     },
     properties: {
         slideIndex: {
@@ -168,11 +171,14 @@ export default {
         },
         navigationIcons: {
             hidden: true,
-            defaultValue: [{isWwObject: true, type: "ww-icon"}, {isWwObject: true, type: "ww-icon"}],
+            defaultValue: [
+                { isWwObject: true, type: 'ww-icon' },
+                { isWwObject: true, type: 'ww-icon' },
+            ],
         },
         bulletsIcons: {
             hidden: true,
-            defaultValue: {isWwObject: true, type: "ww-icon"},
+            defaultValue: { isWwObject: true, type: 'ww-icon' },
         },
     },
 };
