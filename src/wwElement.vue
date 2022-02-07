@@ -43,9 +43,6 @@
 
         <!-- wwEditor:start -->
         <div class="element-container__status label-xs">Slide {{ sliderIndex + 1 }}</div>
-        <div class="element-container__menu">
-            <wwEditorIcon small name="slider" />
-        </div>
         <!-- wwEditor:end -->
     </div>
 </template>
@@ -308,35 +305,6 @@ export default {
             border: 1px solid var(--ww-editor-color);
             pointer-events: none;
             z-index: 10;
-        }
-        > .element-container__menu {
-            opacity: 1;
-            pointer-events: all;
-        }
-    }
-    &__menu {
-        display: flex;
-        position: absolute;
-        top: 0px;
-        left: 5px;
-        transform: translate(-50%, -50%);
-        border-radius: 100%;
-        padding: var(--ww-spacing-01);
-        transition: opacity 0.2s ease;
-        z-index: 101;
-        cursor: pointer;
-        background-color: var(--ww-color-blue-500);
-        color: var(--ww-color-white);
-        justify-content: center;
-        align-items: center;
-        opacity: 0;
-        pointer-events: none;
-        &:after {
-            content: '';
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%) rotate(45deg);
         }
     }
     /* wwEditor:end */

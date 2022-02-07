@@ -13,6 +13,9 @@ export default {
                 sections: ['slideIndex'],
             },
         },
+        bubble: {
+            icon: 'slider',
+        },
     },
     properties: {
         slideIndex: {
