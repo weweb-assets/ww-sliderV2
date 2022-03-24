@@ -189,13 +189,15 @@ export default {
     methods: {
         initSwiper(resetIndex = true) {
             if (this.swiperInstance) this.swiperInstance.destroy(true, true);
-            this.swiperInstance = new Swiper(this.$el.querySelector('.swiper'), this.swiperOptions);
+            this.$nextTick(() => {
+                this.swiperInstance = new Swiper(this.$el.querySelector('.swiper'), this.swiperOptions);
 
-            this.sliderIndex = this.swiperInstance.activeIndex;
-            this.swiperInstance.on('activeIndexChange', () => {
                 this.sliderIndex = this.swiperInstance.activeIndex;
+                this.swiperInstance.on('activeIndexChange', () => {
+                    this.sliderIndex = this.swiperInstance.activeIndex;
+                });
+                if (resetIndex) this.slideTo(0);
             });
-            if (resetIndex) this.slideTo(0);
         },
         /* wwEditor:start */
         async addSlide() {

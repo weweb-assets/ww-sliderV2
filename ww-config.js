@@ -1,7 +1,7 @@
 export default {
     editor: {
         label: {
-            en: 'Text Slider',
+            en: 'Slider',
         },
         icon: 'slider',
         menuOptions: {
