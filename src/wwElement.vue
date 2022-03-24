@@ -1,8 +1,9 @@
 <template>
     <div class="element-container" :style="cssVariables" :class="{ editing: isEditing, selected: isSelected }">
-        <div class="swiper" :data-swiper-id="uniqueID" ww-responsive="swiper">
+        <div class="swiper" ww-responsive="swiper">
             <wwLayout
-                disable-drag-drop="true"
+                ref="swiperWrapper"
+                :disable-drag-drop="true"
                 path="mainLayoutContent"
                 class="swiper-wrapper"
                 ww-responsive="swiper-wrapper"
@@ -48,7 +49,7 @@
 </template>
 
 <script>
-import Swiper, { EffectFlip, EffectFade, EffectCoverflow, EffectCube, EffectCards } from 'swiper';
+import Swiper, { EffectFlip, EffectFade, EffectCoverflow, EffectCube, EffectCards, Autoplay } from 'swiper';
 import 'swiper/swiper.min.css';
 import 'swiper/modules/effect-fade/effect-fade.min.css';
 import 'swiper/modules/effect-coverflow/effect-coverflow.min.css';
@@ -73,8 +74,6 @@ export default {
     data() {
         return {
             sliderIndex: 0,
-            uniqueID: null,
-            intervalHolder: null,
         };
     },
     computed: {
@@ -93,17 +92,15 @@ export default {
             return false;
         },
         nbOfSlides() {
-            return this.content.mainLayoutContent.length;
-        },
-        isLoop() {
-            return this.content.automatic || this.content.loop;
+            if (Array.isArray(this.content.mainLayoutContent)) return this.content.mainLayoutContent.length;
+            return this.content.mainLayoutContent;
         },
         showLeftNav() {
-            const hasPrevious = this.sliderIndex > 0 || this.isLoop;
+            const hasPrevious = this.sliderIndex > 0 || this.content.loop;
             return this.content.navigation && hasPrevious;
         },
         showRightNav() {
-            const hasNext = this.sliderIndex < this.nbOfSlides - 1 || this.isLoop;
+            const hasNext = this.sliderIndex < this.nbOfSlides - 1 || this.content.loop;
             return this.content.navigation && hasNext;
         },
         numberOfBullets() {
@@ -130,15 +127,21 @@ export default {
         },
         swiperOptions() {
             return {
-                modules: [EffectFlip, EffectFade, EffectCoverflow, EffectCube, EffectCards],
+                modules: [EffectFlip, EffectFade, EffectCoverflow, EffectCube, EffectCards, Autoplay],
                 effect: this.content.effect,
                 cardsEffect: { slideShadows: false },
                 coverflowEffect: { slideShadows: false },
                 slidesPerView: this.slidesPerView,
                 spaceBetween: parseInt(this.content.spaceBetween.slice(0, -2)),
-                loop: this.isLoop,
+                loop: this.content.loop,
                 allowTouchMove: !this.isEditing,
                 freeMode: this.content.linearTransition,
+                autoplay:
+                    this.content.automatic && !this.isEditing
+                        ? {
+                              delay: this.automaticTiming * 1000,
+                          }
+                        : false,
             };
         },
         cssVariables() {
@@ -151,18 +154,20 @@ export default {
         /* wwEditor:start */
         isEditing() {
             this.initSwiper();
-            if (this.content.automatic && !this.isEditing) {
-                this.startAutomate();
-            } else if (this.isEditing) {
-                this.stopAutomate();
-            }
         },
         'wwEditorState.sidepanelContent.slideIndex'(index) {
-            if (this.sliderIndex !== index) this.slideTo(index);
+            if (this.sliderIndex !== index) {
+                this.$nextTick(() => {
+                    this.slideTo(index);
+                });
+            }
         },
         sliderIndex(index) {
             if (this.wwEditorState.sidepanelContent.slideIndex !== index) {
-                this.$emit('update:sidepanel-content', { path: 'slideIndex', value: index });
+                this.$emit('update:sidepanel-content', {
+                    path: 'slideIndex',
+                    value: index,
+                });
             }
         },
         swiperOptions() {
@@ -176,30 +181,16 @@ export default {
         /* wwEditor:end */
     },
     mounted() {
-        const swiperElement = this.$el.querySelector('[data-swiper-id]');
-        if (swiperElement) {
-            this.uniqueID = swiperElement.getAttribute('data-swiper-id');
-        } else {
-            this.uniqueID = wwLib.wwUtils.getUniqueId();
-        }
-
-        this.$nextTick(() => {
-            this.initSwiper(false);
-            /* wwFront:start */
-            if (this.content.automatic) {
-                this.startAutomate();
-            }
-            /* wwFront:start */
-        });
+        this.initSwiper(false);
     },
     beforeUnmount() {
         if (this.swiperInstance) this.swiperInstance.destroy(true, true);
-        if (this.intervalHolder) clearInterval(this.intervalHolder);
     },
     methods: {
         initSwiper(resetIndex = true) {
             if (this.swiperInstance) this.swiperInstance.destroy(true, true);
-            this.swiperInstance = new Swiper(`[data-swiper-id="${this.uniqueID}"]`, this.swiperOptions);
+            this.swiperInstance = new Swiper(this.$el.querySelector('.swiper'), this.swiperOptions);
+
             this.sliderIndex = this.swiperInstance.activeIndex;
             this.swiperInstance.on('activeIndexChange', () => {
                 this.sliderIndex = this.swiperInstance.activeIndex;
@@ -211,7 +202,7 @@ export default {
             const mainLayoutContent = [...this.content.mainLayoutContent];
 
             if (mainLayoutContent.length === 0) {
-                const slide = await wwLib.createElement('ww-flexbox', {}, {}, this.wwFrontState.sectionId);
+                const slide = await wwLib.createElement('ww-ww-flexbox', {}, {}, this.wwFrontState.sectionId);
                 mainLayoutContent.push(slide);
             } else {
                 const slide = await wwLib.wwObjectHelper.cloneElement(
@@ -230,7 +221,9 @@ export default {
         },
         /* wwEditor:end */
         slideTo(index) {
-            this.swiperInstance.slideTo(index, this.transitionDuration, false);
+            if (this.swiperInstance) {
+                this.swiperInstance.slideTo(index, this.transitionDuration);
+            }
         },
         onBulletClick(index) {
             if (this.isEditing) return;
@@ -238,21 +231,15 @@ export default {
         },
         slideNext() {
             if (this.isEditing) return;
-            this.swiperInstance.slideNext(this.transitionDuration);
+            if (this.swiperInstance) {
+                this.swiperInstance.slideNext(this.transitionDuration);
+            }
         },
         slidePrev() {
             if (this.isEditing) return;
-            this.swiperInstance.slidePrev(this.transitionDuration);
-        },
-        startAutomate() {
-            this.stopAutomate();
-            this.intervalHolder = setInterval(() => {
-                this.slideNext();
-            }, this.automaticTiming * 1000);
-        },
-        stopAutomate() {
-            if (this.intervalHolder) clearInterval(this.intervalHolder);
-            this.intervalHolder = null;
+            if (this.swiperInstance) {
+                this.swiperInstance.slidePrev(this.transitionDuration);
+            }
         },
     },
 };
