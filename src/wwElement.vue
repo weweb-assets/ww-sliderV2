@@ -92,9 +92,8 @@ export default {
             return false;
         },
         nbOfSlides() {
-            return 10;
-            // if (Array.isArray(this.content.mainLayoutContent)) return this.content.mainLayoutContent.length;
-            // return this.content.mainLayoutContent;
+            if (Array.isArray(this.content.mainLayoutContent)) return this.content.mainLayoutContent.length;
+            return this.content.mainLayoutContent;
         },
         showLeftNav() {
             const hasPrevious = this.sliderIndex > 0 || this.content.loop;
@@ -194,7 +193,6 @@ export default {
                 this.$nextTick(() => {
                     const el = this.$el.querySelector('.swiper');
                     this.swiperInstance = new Swiper(el, this.swiperOptions);
-                    console.log(this.swiperInstance);
 
                     this.sliderIndex = this.swiperInstance.activeIndex;
                     this.swiperInstance.on('activeIndexChange', () => {
