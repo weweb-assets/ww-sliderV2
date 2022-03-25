@@ -189,18 +189,20 @@ export default {
     },
     methods: {
         initSwiper(resetIndex = true) {
-            if (this.swiperInstance) this.swiperInstance.destroy(true, true);
-            this.$nextTick(() => {
-                const el = this.$el.querySelector('.swiper');
-                console.log(el);
-                this.swiperInstance = new Swiper(el, this.swiperOptions);
+            if (!window.__WW_IS_PRERENDER__) {
+                if (this.swiperInstance) this.swiperInstance.destroy(true, true);
+                this.$nextTick(() => {
+                    const el = this.$el.querySelector('.swiper');
+                    this.swiperInstance = new Swiper(el, this.swiperOptions);
+                    console.log(this.swiperInstance);
 
-                this.sliderIndex = this.swiperInstance.activeIndex;
-                this.swiperInstance.on('activeIndexChange', () => {
                     this.sliderIndex = this.swiperInstance.activeIndex;
+                    this.swiperInstance.on('activeIndexChange', () => {
+                        this.sliderIndex = this.swiperInstance.activeIndex;
+                    });
+                    if (resetIndex) this.slideTo(0);
                 });
-                if (resetIndex) this.slideTo(0);
-            });
+            }
         },
         /* wwEditor:start */
         async addSlide() {
