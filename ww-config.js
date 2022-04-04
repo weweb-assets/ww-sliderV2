@@ -18,20 +18,40 @@ export default {
         },
     },
     properties: {
+        mainLayoutContent: {
+            label: {
+                en: 'Bind slides',
+            },
+            bindable: 'repeatable',
+            type: 'Info',
+            options: {
+                text: ' ',
+            },
+            section: 'settings',
+            defaultValue: [
+                { isWwObject: true, type: 'ww-flexbox' },
+                { isWwObject: true, type: 'ww-flexbox' },
+                { isWwObject: true, type: 'ww-flexbox' },
+            ],
+        },
         slideIndex: {
             label: { en: 'Slides', fr: 'Slides' },
             type: 'Tabs',
             editorOnly: true,
-            options: content => ({
-                labels: content.mainLayoutContent.map(({ uid }) => ({
-                    type: 'element',
-                    uid,
-                })),
-                prefixLabel: 'Slide',
-                nbTabs: content.mainLayoutContent.length,
-                add: 'addSlide',
-                remove: 'removeSlide',
-            }),
+            options: (content, _, boundProps) => {
+                const isBound = !!boundProps.mainLayoutContent;
+
+                return {
+                    labels: content.mainLayoutContent.map(() => ({
+                        label: 'slide',
+                    })),
+                    prefixLabel: 'Slide',
+                    nbTabs: content.mainLayoutContent.length,
+                    add: 'addSlide',
+                    remove: 'removeSlide',
+                    bound: isBound,
+                };
+            },
             section: 'settings',
             defaultValue: 0,
         },
@@ -108,7 +128,16 @@ export default {
                 en: 'Pagination',
                 fr: 'Pagination',
             },
-            defaultValue: true,
+            defaultValue: false,
+            section: 'settings',
+        },
+        automatic: {
+            type: 'OnOff',
+            label: {
+                en: 'Autoplay',
+                fr: 'Autoplay',
+            },
+            defaultValue: false,
             section: 'settings',
         },
         loop: {
@@ -117,15 +146,6 @@ export default {
             label: {
                 en: 'Loop',
                 fr: 'Loop',
-            },
-            defaultValue: false,
-            section: 'settings',
-        },
-        automatic: {
-            type: 'OnOff',
-            label: {
-                en: 'Automatic',
-                fr: 'Automatic',
             },
             defaultValue: false,
             section: 'settings',
@@ -156,14 +176,6 @@ export default {
         slidesContainer: {
             hidden: true,
             defaultValue: [],
-        },
-        mainLayoutContent: {
-            hidden: true,
-            defaultValue: [
-                { isWwObject: true, type: 'ww-flexbox', content: { direction: 'column' } },
-                { isWwObject: true, type: 'ww-flexbox', content: { direction: 'column' } },
-                { isWwObject: true, type: 'ww-flexbox', content: { direction: 'column' } },
-            ],
         },
         navigationIcons: {
             hidden: true,
