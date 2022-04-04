@@ -207,7 +207,7 @@ export default {
             const mainLayoutContent = [...this.content.mainLayoutContent];
 
             if (mainLayoutContent.length === 0) {
-                const slide = await wwLib.createElement('ww-ww-flexbox', {}, {}, this.wwFrontState.sectionId);
+                const slide = await wwLib.createElement('ww-flexbox', {}, {}, this.wwFrontState.sectionId);
                 mainLayoutContent.push(slide);
             } else {
                 const slide = await wwLib.wwObjectHelper.cloneElement(
