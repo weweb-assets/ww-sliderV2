@@ -42,8 +42,8 @@ export default {
                 const isBound = !!boundProps.mainLayoutContent;
 
                 return {
-                    labels: content.mainLayoutContent.map(() => ({
-                        label: 'slide',
+                    labels: content.mainLayoutContent.map((_, index) => ({
+                        label: `slide ${index + 1}`,
                     })),
                     prefixLabel: 'Slide',
                     nbTabs: content.mainLayoutContent.length,
