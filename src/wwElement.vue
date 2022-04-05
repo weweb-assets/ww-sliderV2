@@ -179,6 +179,17 @@ export default {
                 this.initSwiper();
             });
         },
+        'content.automatic': {
+            immediate: true,
+            handler(val) {
+                this.$nextTick(() => {
+                    if (val === true) {
+                        this.$emit('update:content', { loop: false });
+                        this.initSwiper();
+                    }
+                });
+            },
+        },
         /* wwEditor:end */
     },
     mounted() {
