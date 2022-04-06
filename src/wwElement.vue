@@ -1,15 +1,14 @@
 <template>
     <div class="element-container" :style="cssVariables" :class="{ editing: isEditing, selected: isSelected }">
-        <div class="swiper" ww-responsive="swiper">
+        <div ref="swiper" class="swiper" ww-responsive="swiper">
             <wwLayout
-                ref="swiperWrapper"
                 :disable-drag-drop="true"
                 path="mainLayoutContent"
                 class="swiper-wrapper"
                 ww-responsive="swiper-wrapper"
             >
                 <template #default="{ item, index }">
-                    <wwLayoutItem class="swiper-slide" :ww-responsive="`swiper-slide-${index}`">
+                    <wwLayoutItem class="swiper-slide" ww-responsive="swiper-slide">
                         <wwElement
                             class="slide-container"
                             v-bind="item"
@@ -125,8 +124,20 @@ export default {
                 return this.content.slidesPerView;
             }
         },
+        isAutoplay() {
+            return this.content.automatic && !this.isEditing;
+        },
+        isValidContent() {
+            return this.content.mainLayoutContent && Array.isArray(this.content.mainLayoutContent);
+        },
         swiperOptions() {
-            return {
+            const autoplay = {
+                autoplay: {
+                    delay: this.automaticTiming * 1000,
+                },
+            };
+
+            const options = {
                 modules: [EffectFlip, EffectFade, EffectCoverflow, EffectCube, EffectCards, Autoplay],
                 effect: this.content.effect,
                 cardsEffect: { slideShadows: false },
@@ -134,15 +145,10 @@ export default {
                 slidesPerView: this.slidesPerView,
                 spaceBetween: parseInt(this.content.spaceBetween.slice(0, -2)),
                 loop: this.content.loop,
-                allowTouchMove: !this.isEditing,
                 freeMode: this.content.linearTransition,
-                autoplay:
-                    this.content.automatic && !this.isEditing
-                        ? {
-                              delay: this.automaticTiming * 1000,
-                          }
-                        : false,
             };
+
+            return this.isAutoplay ? { ...options, ...autoplay } : { ...options };
         },
         cssVariables() {
             return {
@@ -178,6 +184,17 @@ export default {
                 this.initSwiper();
             });
         },
+        'content.automatic': {
+            immediate: true,
+            handler(val) {
+                this.$nextTick(() => {
+                    if (val === true) {
+                        this.$emit('update:content', { loop: false });
+                        this.initSwiper();
+                    }
+                });
+            },
+        },
         /* wwEditor:end */
     },
     mounted() {
@@ -189,11 +206,11 @@ export default {
     methods: {
         initSwiper(resetIndex = true) {
             if (!window.__WW_IS_PRERENDER__) {
-                if (this.swiperInstance) this.swiperInstance.destroy(true, true);
+                if (this.swiperInstance && this.swiperInstance.destroy) this.swiperInstance.destroy(true, true);
+                this.$forceUpdate();
+                if (!this.isValidContent) return;
                 this.$nextTick(() => {
-                    const el = this.$el.querySelector('.swiper');
-                    this.swiperInstance = new Swiper(el, this.swiperOptions);
-
+                    this.swiperInstance = new Swiper(this.$refs.swiper, this.swiperOptions);
                     this.sliderIndex = this.swiperInstance.activeIndex;
                     this.swiperInstance.on('activeIndexChange', () => {
                         this.sliderIndex = this.swiperInstance.activeIndex;
