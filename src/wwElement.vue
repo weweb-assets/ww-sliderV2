@@ -8,8 +8,7 @@
                 ww-responsive="swiper-wrapper"
             >
                 <template #default="{ item, index }">
-                    <wwLayoutItem class="swiper-slide" :ww-responsive="`swiper-slide-${index}`">
-                        {{ isAutoplay }}
+                    <wwLayoutItem class="swiper-slide" ww-responsive="swiper-slide">
                         <wwElement
                             class="slide-container"
                             v-bind="item"
@@ -144,7 +143,6 @@ export default {
                 slidesPerView: this.slidesPerView,
                 spaceBetween: parseInt(this.content.spaceBetween.slice(0, -2)),
                 loop: this.content.loop,
-                allowTouchMove: !this.isEditing,
                 freeMode: this.content.linearTransition,
             };
 
