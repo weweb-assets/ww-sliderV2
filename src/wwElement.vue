@@ -3,7 +3,7 @@
         <div ref="swiper" :key="componentKey" class="swiper" ww-responsive="swiper">
             <wwLayout
                 :disable-drag-drop="true"
-                :path="contentLayout"
+                path="mainLayoutContent"
                 class="swiper-wrapper"
                 ww-responsive="swiper-wrapper"
             >
@@ -128,9 +128,8 @@ export default {
         isAutoplay() {
             return this.content.automatic && !this.isEditing;
         },
-        contentLayout() {
-            if (Array.isArray(this.content.mainLayoutContent)) return this.content.mainLayoutContent;
-            return [];
+        isValidContent() {
+            return this.content.mainLayoutContent && Array.isArray(this.content.mainLayoutContent);
         },
         swiperOptions() {
             const autoplay = {
@@ -210,7 +209,7 @@ export default {
             if (!window.__WW_IS_PRERENDER__) {
                 if (this.swiperInstance && this.swiperInstance.destroy) this.swiperInstance.destroy(true, true);
                 this.componentKey += 1;
-
+                if (!this.isValidContent) return;
                 this.$nextTick(() => {
                     this.swiperInstance = new Swiper(this.$refs.swiper, this.swiperOptions);
                     this.sliderIndex = this.swiperInstance.activeIndex;
