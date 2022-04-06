@@ -1,6 +1,6 @@
 <template>
     <div class="element-container" :style="cssVariables" :class="{ editing: isEditing, selected: isSelected }">
-        <div ref="swiper" :key="componentKey" class="swiper" ww-responsive="swiper">
+        <div ref="swiper" class="swiper" ww-responsive="swiper">
             <wwLayout
                 :disable-drag-drop="true"
                 path="mainLayoutContent"
@@ -68,7 +68,6 @@ export default {
     setup() {
         return {
             swiperInstance: null,
-            componentKey: 0,
         };
     },
     data() {
@@ -208,7 +207,7 @@ export default {
         initSwiper(resetIndex = true) {
             if (!window.__WW_IS_PRERENDER__) {
                 if (this.swiperInstance && this.swiperInstance.destroy) this.swiperInstance.destroy(true, true);
-                this.componentKey += 1;
+                this.$forceUpdate();
                 if (!this.isValidContent) return;
                 this.$nextTick(() => {
                     this.swiperInstance = new Swiper(this.$refs.swiper, this.swiperOptions);
