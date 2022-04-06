@@ -1,6 +1,6 @@
 <template>
     <div class="element-container" :style="cssVariables" :class="{ editing: isEditing, selected: isSelected }">
-        <div ref="swiper" class="swiper" ww-responsive="swiper">
+        <div ref="swiper" :key="componentKey" class="swiper" ww-responsive="swiper">
             <wwLayout
                 :disable-drag-drop="true"
                 path="mainLayoutContent"
@@ -9,6 +9,7 @@
             >
                 <template #default="{ item, index }">
                     <wwLayoutItem class="swiper-slide" :ww-responsive="`swiper-slide-${index}`">
+                        {{ isAutoplay }}
                         <wwElement
                             class="slide-container"
                             v-bind="item"
@@ -73,6 +74,7 @@ export default {
     data() {
         return {
             sliderIndex: 0,
+            componentKey: 0,
         };
     },
     computed: {
@@ -124,6 +126,9 @@ export default {
                 return this.content.slidesPerView;
             }
         },
+        isAutoplay() {
+            return this.content.automatic && !this.isEditing;
+        },
         swiperOptions() {
             const autoplay = {
                 autoplay: {
@@ -143,7 +148,7 @@ export default {
                 freeMode: this.content.linearTransition,
             };
 
-            return this.content.automatic && !this.isEditing ? { ...options, ...autoplay } : { ...options };
+            return this.isAutoplay ? { ...options, ...autoplay } : { ...options };
         },
         cssVariables() {
             return {
@@ -201,12 +206,11 @@ export default {
     methods: {
         initSwiper(resetIndex = true) {
             if (!window.__WW_IS_PRERENDER__) {
-                if (this.swiperInstance) this.swiperInstance.destroy(true, true);
-                this.$forceUpdate();
+                if (this.swiperInstance && this.swiperInstance.destroy) this.swiperInstance.destroy(true, true);
+                this.componentKey += 1;
 
                 this.$nextTick(() => {
                     this.swiperInstance = new Swiper(this.$refs.swiper, this.swiperOptions);
-
                     this.sliderIndex = this.swiperInstance.activeIndex;
                     this.swiperInstance.on('activeIndexChange', () => {
                         this.sliderIndex = this.swiperInstance.activeIndex;
