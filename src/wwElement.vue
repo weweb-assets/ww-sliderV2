@@ -3,7 +3,7 @@
         <div ref="swiper" :key="componentKey" class="swiper" ww-responsive="swiper">
             <wwLayout
                 :disable-drag-drop="true"
-                path="mainLayoutContent"
+                :path="contentLayout"
                 class="swiper-wrapper"
                 ww-responsive="swiper-wrapper"
             >
@@ -127,6 +127,10 @@ export default {
         },
         isAutoplay() {
             return this.content.automatic && !this.isEditing;
+        },
+        contentLayout() {
+            if (Array.isArray(this.content.mainLayoutContent)) return this.content.mainLayoutContent;
+            return [];
         },
         swiperOptions() {
             const autoplay = {
