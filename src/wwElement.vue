@@ -2,6 +2,7 @@
     <div class="element-container" :style="cssVariables" :class="{ editing: isEditing, selected: isSelected }">
         <div ref="swiper" :key="componentKey" class="swiper" ww-responsive="swiper">
             <wwLayout
+                ref="swiperWrapper"
                 :disable-drag-drop="true"
                 path="mainLayoutContent"
                 class="swiper-wrapper"
@@ -48,6 +49,8 @@
 </template>
 
 <script>
+import { nextTick } from 'vue';
+
 import Swiper, { EffectFlip, EffectFade, EffectCoverflow, EffectCube, EffectCards, Autoplay } from 'swiper';
 import 'swiper/swiper.min.css';
 import 'swiper/modules/effect-fade/effect-fade.min.css';
@@ -176,9 +179,7 @@ export default {
         },
         'wwEditorState.sidepanelContent.slideIndex'(index) {
             if (this.sliderIndex !== index) {
-                this.$nextTick(() => {
-                    this.slideTo(index);
-                });
+                this.slideTo(index);
             }
         },
         sliderIndex(index) {
@@ -193,9 +194,7 @@ export default {
             this.initSwiper();
         },
         'content.mainLayoutContent'() {
-            this.$nextTick(() => {
-                this.initSwiper();
-            });
+            this.initSwiper();
         },
         isBound(bound) {
             if (bound) this.$emit('update:content', { loop: false });
@@ -209,19 +208,22 @@ export default {
         if (this.swiperInstance) this.swiperInstance.destroy(true, true);
     },
     methods: {
-        initSwiper(resetIndex = true) {
+        async initSwiper(resetIndex = true) {
             if (!window.__WW_IS_PRERENDER__) {
                 if (this.swiperInstance && this.swiperInstance.destroy) this.swiperInstance.destroy(true, true);
-                this.componentKey += 1;
                 if (!this.isValidContent) return;
-                this.$nextTick(() => {
-                    this.swiperInstance = new Swiper(this.$refs.swiper, this.swiperOptions);
+                this.componentKey += 1;
+
+                await nextTick();
+                await nextTick();
+
+                this.swiperInstance = new Swiper(this.$refs.swiper, this.swiperOptions);
+                this.sliderIndex = this.swiperInstance.activeIndex;
+                this.swiperInstance.on('activeIndexChange', () => {
                     this.sliderIndex = this.swiperInstance.activeIndex;
-                    this.swiperInstance.on('activeIndexChange', () => {
-                        this.sliderIndex = this.swiperInstance.activeIndex;
-                    });
-                    if (resetIndex) this.slideTo(0);
                 });
+                if (this.content.loop) return;
+                if (resetIndex) this.slideTo(0);
             }
         },
         /* wwEditor:start */

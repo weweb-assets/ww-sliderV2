@@ -143,7 +143,6 @@ export default {
             section: 'settings',
         },
         loop: {
-            hidden: (content, _, boundProps) => content.automatic || !!boundProps.mainLayoutContent,
             type: 'OnOff',
             label: {
                 en: 'Loop',
