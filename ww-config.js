@@ -42,11 +42,13 @@ export default {
                 const isBound = !!boundProps.mainLayoutContent;
 
                 return {
-                    labels: content.mainLayoutContent.map((_, index) => ({
-                        label: `slide ${index + 1}`,
-                    })),
+                    labels: Array.isArray(content.mainLayoutContent)
+                        ? content.mainLayoutContent.map((_, index) => ({
+                              label: `slide ${index + 1}`,
+                          }))
+                        : [],
                     prefixLabel: 'Slide',
-                    nbTabs: content.mainLayoutContent.length,
+                    nbTabs: Array.isArray(content.mainLayoutContent) ? content.mainLayoutContent.length : 0,
                     add: 'addSlide',
                     remove: 'removeSlide',
                     bound: isBound,
@@ -63,7 +65,7 @@ export default {
             },
             options: content => ({
                 min: 1,
-                max: content.mainLayoutContent.length,
+                max: Array.isArray(content.mainLayoutContent) ? content.mainLayoutContent.length : 0,
                 step: 1,
             }),
             responsive: true,
@@ -141,7 +143,7 @@ export default {
             section: 'settings',
         },
         loop: {
-            hidden: content => content.automatic,
+            hidden: (content, _, boundProps) => content.automatic || !!boundProps.mainLayoutContent,
             type: 'OnOff',
             label: {
                 en: 'Loop',

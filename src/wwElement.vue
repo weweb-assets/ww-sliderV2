@@ -91,6 +91,17 @@ export default {
             // eslint-disable-next-line no-unreachable
             return false;
         },
+        isBound() {
+            /* wwEditor:start */
+            return (
+                this.wwEditorState.boundProps &&
+                this.wwEditorState.boundProps.mainLayoutContent &&
+                typeof this.wwEditorState.boundProps.mainLayoutContent === 'string'
+            );
+            /* wwEditor:end */
+            // eslint-disable-next-line no-unreachable
+            return false;
+        },
         nbOfSlides() {
             if (Array.isArray(this.content.mainLayoutContent)) return this.content.mainLayoutContent.length;
             return this.content.mainLayoutContent;
@@ -135,6 +146,7 @@ export default {
             const autoplay = {
                 autoplay: {
                     delay: this.automaticTiming * 1000,
+                    disableOnInteraction: false,
                 },
             };
 
@@ -185,16 +197,8 @@ export default {
                 this.initSwiper();
             });
         },
-        'content.automatic': {
-            immediate: true,
-            handler(val) {
-                this.$nextTick(() => {
-                    if (val === true) {
-                        this.$emit('update:content', { loop: false });
-                        this.initSwiper();
-                    }
-                });
-            },
+        isBound(bound) {
+            if (bound) this.$emit('update:content', { loop: false });
         },
         /* wwEditor:end */
     },
