@@ -209,22 +209,22 @@ export default {
     },
     methods: {
         async initSwiper(resetIndex = true) {
-            if (!window.__WW_IS_PRERENDER__) {
-                if (this.swiperInstance && this.swiperInstance.destroy) this.swiperInstance.destroy(true, true);
-                if (!this.isValidContent) return;
-                this.componentKey += 1;
+            if (window.__WW_IS_PRERENDER__) return;
+            if (!this.isValidContent) return;
 
-                await nextTick();
-                await nextTick();
+            if (this.swiperInstance && this.swiperInstance.destroy) this.swiperInstance.destroy(true, true);
+            this.componentKey += 1;
 
-                this.swiperInstance = new Swiper(this.$refs.swiper, this.swiperOptions);
+            await nextTick();
+            await nextTick();
+
+            this.swiperInstance = new Swiper(this.$refs.swiper, this.swiperOptions);
+            this.sliderIndex = this.swiperInstance.activeIndex;
+            this.swiperInstance.on('activeIndexChange', () => {
                 this.sliderIndex = this.swiperInstance.activeIndex;
-                this.swiperInstance.on('activeIndexChange', () => {
-                    this.sliderIndex = this.swiperInstance.activeIndex;
-                });
-                if (this.content.loop) return;
-                if (resetIndex) this.slideTo(0);
-            }
+            });
+            if (this.content.loop) return;
+            if (resetIndex) this.slideTo(0);
         },
         /* wwEditor:start */
         async addSlide() {
