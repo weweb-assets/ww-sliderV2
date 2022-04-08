@@ -110,7 +110,7 @@ export default {
                 fr: 'Transition duration',
             },
             options: {
-                unitChoices: [{ value: 'ms', label: 'ms', min: 1, max: 5000 }],
+                unitChoices: [{ value: 'ms', label: 'ms', min: 1, max: 20000 }],
             },
             section: 'settings',
             defaultValue: '400ms',
@@ -143,7 +143,6 @@ export default {
             section: 'settings',
         },
         loop: {
-            hidden: (content, _, boundProps) => !!boundProps.mainLayoutContent,
             type: 'OnOff',
             label: {
                 en: 'Loop',

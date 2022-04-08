@@ -2,7 +2,6 @@
     <div class="element-container" :style="cssVariables" :class="{ editing: isEditing, selected: isSelected }">
         <div ref="swiper" :key="componentKey" class="swiper" ww-responsive="swiper">
             <wwLayout
-                ref="swiperWrapper"
                 :disable-drag-drop="true"
                 path="mainLayoutContent"
                 class="swiper-wrapper"
@@ -139,9 +138,6 @@ export default {
                 return this.content.slidesPerView;
             }
         },
-        isAutoplay() {
-            return this.content.automatic && !this.isEditing;
-        },
         isValidContent() {
             return this.content.mainLayoutContent && Array.isArray(this.content.mainLayoutContent);
         },
@@ -159,12 +155,13 @@ export default {
                 cardsEffect: { slideShadows: false },
                 coverflowEffect: { slideShadows: false },
                 slidesPerView: this.slidesPerView,
+                speed: this.transitionDuration,
                 spaceBetween: parseInt(this.content.spaceBetween.slice(0, -2)),
                 loop: this.content.loop,
                 freeMode: this.content.linearTransition,
             };
 
-            return this.isAutoplay ? { ...options, ...autoplay } : { ...options };
+            return this.content.automatic ? { ...options, ...autoplay } : { ...options };
         },
         cssVariables() {
             return {
@@ -178,11 +175,13 @@ export default {
             this.initSwiper();
         },
         'wwEditorState.sidepanelContent.slideIndex'(index) {
+            if (!this.isEditing) return;
             if (this.sliderIndex !== index) {
                 this.slideTo(index);
             }
         },
         sliderIndex(index) {
+            if (!this.isEditing) return;
             if (this.wwEditorState.sidepanelContent.slideIndex !== index) {
                 this.$emit('update:sidepanel-content', {
                     path: 'slideIndex',
@@ -195,9 +194,6 @@ export default {
         },
         'content.mainLayoutContent'() {
             this.initSwiper();
-        },
-        isBound(bound) {
-            if (bound) this.$emit('update:content', { loop: false });
         },
         /* wwEditor:end */
     },
@@ -215,16 +211,19 @@ export default {
             if (this.swiperInstance && this.swiperInstance.destroy) this.swiperInstance.destroy(true, true);
             this.componentKey += 1;
 
+            // Necessary to make the loop mode work properly with wwElements
             await nextTick();
             await nextTick();
 
             this.swiperInstance = new Swiper(this.$refs.swiper, this.swiperOptions);
-            this.sliderIndex = this.swiperInstance.activeIndex;
-            this.swiperInstance.on('activeIndexChange', () => {
-                this.sliderIndex = this.swiperInstance.activeIndex;
+            this.sliderIndex = this.swiperInstance.realIndex;
+            this.swiperInstance.on('realIndexChange', () => {
+                this.sliderIndex = this.swiperInstance.realIndex;
             });
-            if (this.content.loop) return;
+
             if (resetIndex) this.slideTo(0);
+
+            this.handleAutoplay();
         },
         /* wwEditor:start */
         async addSlide() {
@@ -250,9 +249,7 @@ export default {
         },
         /* wwEditor:end */
         slideTo(index) {
-            if (this.swiperInstance) {
-                this.swiperInstance.slideTo(index, this.transitionDuration);
-            }
+            if (this.swiperInstance) this.swiperInstance.slideToLoop(index, this.transitionDuration);
         },
         onBulletClick(index) {
             if (this.isEditing) return;
@@ -260,14 +257,29 @@ export default {
         },
         slideNext() {
             if (this.isEditing) return;
-            if (this.swiperInstance) {
-                this.swiperInstance.slideNext(this.transitionDuration);
-            }
+            if (this.swiperInstance) this.swiperInstance.slideNext(this.transitionDuration);
         },
         slidePrev() {
             if (this.isEditing) return;
-            if (this.swiperInstance) {
-                this.swiperInstance.slidePrev(this.transitionDuration);
+            if (this.swiperInstance) this.swiperInstance.slidePrev(this.transitionDuration);
+        },
+        handleAutoplay() {
+            if (
+                this.isEditing &&
+                this.content.automatic &&
+                this.swiperInstance &&
+                this.swiperInstance.autoplay &&
+                this.swiperInstance.autoplay.running
+            ) {
+                this.swiperInstance.autoplay.stop();
+            } else if (
+                !this.isEditing &&
+                this.content.automatic &&
+                this.swiperInstance &&
+                this.swiperInstance.autoplay &&
+                this.swiperInstance.autoplay.running
+            ) {
+                this.swiperInstance.autoplay.start();
             }
         },
     },
