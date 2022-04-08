@@ -76,6 +76,7 @@ export default {
         return {
             sliderIndex: 0,
             componentKey: 0,
+            isInit: false,
         };
     },
     computed: {
@@ -139,7 +140,11 @@ export default {
             }
         },
         isValidContent() {
-            return this.content.mainLayoutContent && Array.isArray(this.content.mainLayoutContent);
+            return (
+                this.content.mainLayoutContent &&
+                Array.isArray(this.content.mainLayoutContent) &&
+                this.content.mainLayoutContent.length
+            );
         },
         swiperOptions() {
             const autoplay = {
@@ -159,6 +164,12 @@ export default {
                 spaceBetween: parseInt(this.content.spaceBetween.slice(0, -2)),
                 loop: this.content.loop,
                 freeMode: this.content.linearTransition,
+
+                on: {
+                    realIndexChange: () => {
+                        this.sliderIndex = this.swiperInstance.realIndex;
+                    },
+                },
             };
 
             return this.content.automatic ? { ...options, ...autoplay } : { ...options };
@@ -208,6 +219,9 @@ export default {
             if (window.__WW_IS_PRERENDER__) return;
             if (!this.isValidContent) return;
 
+            if (this.isInit) return;
+            this.isInit = true;
+
             if (this.swiperInstance && this.swiperInstance.destroy) this.swiperInstance.destroy(true, true);
             this.componentKey += 1;
 
@@ -217,13 +231,11 @@ export default {
 
             this.swiperInstance = new Swiper(this.$refs.swiper, this.swiperOptions);
             this.sliderIndex = this.swiperInstance.realIndex;
-            this.swiperInstance.on('realIndexChange', () => {
-                this.sliderIndex = this.swiperInstance.realIndex;
-            });
 
             if (resetIndex) this.slideTo(0);
 
             this.handleAutoplay();
+            this.isInit = false;
         },
         /* wwEditor:start */
         async addSlide() {
