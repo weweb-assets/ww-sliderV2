@@ -219,10 +219,13 @@ export default {
             if (window.__WW_IS_PRERENDER__) return;
             if (!this.isValidContent) return;
 
+            // Prevents multiple initializations that can lead to autoplay or loop bugs
             if (this.isInit) return;
             this.isInit = true;
 
             if (this.swiperInstance && this.swiperInstance.destroy) this.swiperInstance.destroy(true, true);
+
+            // Necessary to clean the possible persistent style in the element before a new initialization
             this.componentKey += 1;
 
             // Necessary to make the loop mode work properly with wwElements
@@ -234,6 +237,7 @@ export default {
 
             if (resetIndex) this.slideTo(0);
 
+            // Ensures that autoplay does not continue when editing
             this.handleAutoplay();
             this.isInit = false;
         },
@@ -261,6 +265,8 @@ export default {
         },
         /* wwEditor:end */
         slideTo(index) {
+            /* slideToLoop instead of slideTo allows to always rely on the realIndex,
+            and thus to keep the right index even when the loop mode is activated */
             if (this.swiperInstance) this.swiperInstance.slideToLoop(index, this.transitionDuration);
         },
         onBulletClick(index) {
