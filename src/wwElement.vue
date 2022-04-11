@@ -1,6 +1,6 @@
 <template>
     <div class="element-container" :style="cssVariables" :class="{ editing: isEditing, selected: isSelected }">
-        <div ref="swiper" class="swiper" ww-responsive="swiper">
+        <div ref="swiper" :key="componentKey" class="swiper" ww-responsive="swiper">
             <wwLayout
                 :disable-drag-drop="true"
                 path="mainLayoutContent"
@@ -48,6 +48,8 @@
 </template>
 
 <script>
+import { nextTick } from 'vue';
+
 import Swiper, { EffectFlip, EffectFade, EffectCoverflow, EffectCube, EffectCards, Autoplay } from 'swiper';
 import 'swiper/swiper.min.css';
 import 'swiper/modules/effect-fade/effect-fade.min.css';
@@ -73,6 +75,8 @@ export default {
     data() {
         return {
             sliderIndex: 0,
+            componentKey: 0,
+            isInit: false,
         };
     },
     computed: {
@@ -124,16 +128,18 @@ export default {
                 return this.content.slidesPerView;
             }
         },
-        isAutoplay() {
-            return this.content.automatic && !this.isEditing;
-        },
         isValidContent() {
-            return this.content.mainLayoutContent && Array.isArray(this.content.mainLayoutContent);
+            return (
+                this.content.mainLayoutContent &&
+                Array.isArray(this.content.mainLayoutContent) &&
+                this.content.mainLayoutContent.length
+            );
         },
         swiperOptions() {
             const autoplay = {
                 autoplay: {
                     delay: this.automaticTiming * 1000,
+                    disableOnInteraction: false,
                 },
             };
 
@@ -143,12 +149,19 @@ export default {
                 cardsEffect: { slideShadows: false },
                 coverflowEffect: { slideShadows: false },
                 slidesPerView: this.slidesPerView,
+                speed: this.transitionDuration,
                 spaceBetween: parseInt(this.content.spaceBetween.slice(0, -2)),
                 loop: this.content.loop,
                 freeMode: this.content.linearTransition,
+
+                on: {
+                    realIndexChange: () => {
+                        this.sliderIndex = this.swiperInstance.realIndex;
+                    },
+                },
             };
 
-            return this.isAutoplay ? { ...options, ...autoplay } : { ...options };
+            return this.content.automatic ? { ...options, ...autoplay } : { ...options };
         },
         cssVariables() {
             return {
@@ -162,13 +175,13 @@ export default {
             this.initSwiper();
         },
         'wwEditorState.sidepanelContent.slideIndex'(index) {
+            if (!this.isEditing) return;
             if (this.sliderIndex !== index) {
-                this.$nextTick(() => {
-                    this.slideTo(index);
-                });
+                this.slideTo(index);
             }
         },
         sliderIndex(index) {
+            if (!this.isEditing) return;
             if (this.wwEditorState.sidepanelContent.slideIndex !== index) {
                 this.$emit('update:sidepanel-content', {
                     path: 'slideIndex',
@@ -180,20 +193,7 @@ export default {
             this.initSwiper();
         },
         'content.mainLayoutContent'() {
-            this.$nextTick(() => {
-                this.initSwiper();
-            });
-        },
-        'content.automatic': {
-            immediate: true,
-            handler(val) {
-                this.$nextTick(() => {
-                    if (val === true) {
-                        this.$emit('update:content', { loop: false });
-                        this.initSwiper();
-                    }
-                });
-            },
+            this.initSwiper();
         },
         /* wwEditor:end */
     },
@@ -204,20 +204,31 @@ export default {
         if (this.swiperInstance) this.swiperInstance.destroy(true, true);
     },
     methods: {
-        initSwiper(resetIndex = true) {
-            if (!window.__WW_IS_PRERENDER__) {
-                if (this.swiperInstance && this.swiperInstance.destroy) this.swiperInstance.destroy(true, true);
-                this.$forceUpdate();
-                if (!this.isValidContent) return;
-                this.$nextTick(() => {
-                    this.swiperInstance = new Swiper(this.$refs.swiper, this.swiperOptions);
-                    this.sliderIndex = this.swiperInstance.activeIndex;
-                    this.swiperInstance.on('activeIndexChange', () => {
-                        this.sliderIndex = this.swiperInstance.activeIndex;
-                    });
-                    if (resetIndex) this.slideTo(0);
-                });
-            }
+        async initSwiper(resetIndex = true) {
+            if (window.__WW_IS_PRERENDER__) return;
+            if (!this.isValidContent) return;
+
+            // Prevents multiple initializations that can lead to autoplay or loop bugs
+            if (this.isInit) return;
+            this.isInit = true;
+
+            if (this.swiperInstance && this.swiperInstance.destroy) this.swiperInstance.destroy(true, true);
+
+            // Necessary to clean the possible persistent style in the element before a new initialization
+            this.componentKey += 1;
+
+            // Necessary to make the loop mode work properly with wwElements
+            await nextTick();
+            await nextTick();
+
+            this.swiperInstance = new Swiper(this.$refs.swiper, this.swiperOptions);
+            this.sliderIndex = this.swiperInstance.realIndex;
+
+            if (resetIndex) this.slideTo(0);
+
+            // Ensures that autoplay does not continue when editing
+            this.handleAutoplay();
+            this.isInit = false;
         },
         /* wwEditor:start */
         async addSlide() {
@@ -243,9 +254,9 @@ export default {
         },
         /* wwEditor:end */
         slideTo(index) {
-            if (this.swiperInstance) {
-                this.swiperInstance.slideTo(index, this.transitionDuration);
-            }
+            /* slideToLoop instead of slideTo allows to always rely on the realIndex,
+            and thus to keep the right index even when the loop mode is activated */
+            if (this.swiperInstance) this.swiperInstance.slideToLoop(index, this.transitionDuration);
         },
         onBulletClick(index) {
             if (this.isEditing) return;
@@ -253,14 +264,29 @@ export default {
         },
         slideNext() {
             if (this.isEditing) return;
-            if (this.swiperInstance) {
-                this.swiperInstance.slideNext(this.transitionDuration);
-            }
+            if (this.swiperInstance) this.swiperInstance.slideNext(this.transitionDuration);
         },
         slidePrev() {
             if (this.isEditing) return;
-            if (this.swiperInstance) {
-                this.swiperInstance.slidePrev(this.transitionDuration);
+            if (this.swiperInstance) this.swiperInstance.slidePrev(this.transitionDuration);
+        },
+        handleAutoplay() {
+            if (
+                this.isEditing &&
+                this.content.automatic &&
+                this.swiperInstance &&
+                this.swiperInstance.autoplay &&
+                this.swiperInstance.autoplay.running
+            ) {
+                this.swiperInstance.autoplay.stop();
+            } else if (
+                !this.isEditing &&
+                this.content.automatic &&
+                this.swiperInstance &&
+                this.swiperInstance.autoplay &&
+                this.swiperInstance.autoplay.running
+            ) {
+                this.swiperInstance.autoplay.start();
             }
         },
     },

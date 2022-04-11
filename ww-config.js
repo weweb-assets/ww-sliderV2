@@ -42,11 +42,13 @@ export default {
                 const isBound = !!boundProps.mainLayoutContent;
 
                 return {
-                    labels: content.mainLayoutContent.map((_, index) => ({
-                        label: `slide ${index + 1}`,
-                    })),
+                    labels: Array.isArray(content.mainLayoutContent)
+                        ? content.mainLayoutContent.map((_, index) => ({
+                              label: `slide ${index + 1}`,
+                          }))
+                        : [],
                     prefixLabel: 'Slide',
-                    nbTabs: content.mainLayoutContent.length,
+                    nbTabs: Array.isArray(content.mainLayoutContent) ? content.mainLayoutContent.length : 0,
                     add: 'addSlide',
                     remove: 'removeSlide',
                     bound: isBound,
@@ -63,7 +65,7 @@ export default {
             },
             options: content => ({
                 min: 1,
-                max: content.mainLayoutContent.length,
+                max: Array.isArray(content.mainLayoutContent) ? content.mainLayoutContent.length : 0,
                 step: 1,
             }),
             responsive: true,
@@ -108,7 +110,7 @@ export default {
                 fr: 'Transition duration',
             },
             options: {
-                unitChoices: [{ value: 'ms', label: 'ms', min: 1, max: 5000 }],
+                unitChoices: [{ value: 'ms', label: 'ms', min: 1, max: 20000 }],
             },
             section: 'settings',
             defaultValue: '400ms',
@@ -131,21 +133,20 @@ export default {
             defaultValue: false,
             section: 'settings',
         },
+        loop: {
+            type: 'OnOff',
+            label: {
+                en: 'Loop',
+                fr: 'Loop',
+            },
+            defaultValue: false,
+            section: 'settings',
+        },
         automatic: {
             type: 'OnOff',
             label: {
                 en: 'Autoplay',
                 fr: 'Autoplay',
-            },
-            defaultValue: false,
-            section: 'settings',
-        },
-        loop: {
-            hidden: content => content.automatic,
-            type: 'OnOff',
-            label: {
-                en: 'Loop',
-                fr: 'Loop',
             },
             defaultValue: false,
             section: 'settings',
