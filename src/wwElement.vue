@@ -94,17 +94,6 @@ export default {
             // eslint-disable-next-line no-unreachable
             return false;
         },
-        isBound() {
-            /* wwEditor:start */
-            return (
-                this.wwEditorState.boundProps &&
-                this.wwEditorState.boundProps.mainLayoutContent &&
-                typeof this.wwEditorState.boundProps.mainLayoutContent === 'string'
-            );
-            /* wwEditor:end */
-            // eslint-disable-next-line no-unreachable
-            return false;
-        },
         nbOfSlides() {
             if (Array.isArray(this.content.mainLayoutContent)) return this.content.mainLayoutContent.length;
             return this.content.mainLayoutContent;
