@@ -133,20 +133,20 @@ export default {
             defaultValue: false,
             section: 'settings',
         },
-        automatic: {
-            type: 'OnOff',
-            label: {
-                en: 'Autoplay',
-                fr: 'Autoplay',
-            },
-            defaultValue: false,
-            section: 'settings',
-        },
         loop: {
             type: 'OnOff',
             label: {
                 en: 'Loop',
                 fr: 'Loop',
+            },
+            defaultValue: false,
+            section: 'settings',
+        },
+        automatic: {
+            type: 'OnOff',
+            label: {
+                en: 'Autoplay',
+                fr: 'Autoplay',
             },
             defaultValue: false,
             section: 'settings',
