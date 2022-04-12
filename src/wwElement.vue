@@ -8,7 +8,7 @@
                 ww-responsive="swiper-wrapper"
             >
                 <template #default="{ item, index }">
-                    <wwLayoutItem class="swiper-slide" ww-responsive="swiper-slide">
+                    <wwLayoutItem v-if="item !== undefined" class="swiper-slide" ww-responsive="swiper-slide">
                         <wwElement
                             class="slide-container"
                             v-bind="item"
@@ -128,13 +128,6 @@ export default {
                 return this.content.slidesPerView;
             }
         },
-        isValidContent() {
-            return (
-                this.content.mainLayoutContent &&
-                Array.isArray(this.content.mainLayoutContent) &&
-                this.content.mainLayoutContent.length
-            );
-        },
         swiperOptions() {
             const autoplay = {
                 autoplay: {
@@ -206,7 +199,6 @@ export default {
     methods: {
         async initSwiper(resetIndex = true) {
             if (window.__WW_IS_PRERENDER__) return;
-            if (!this.isValidContent) return;
 
             // Prevents multiple initializations that can lead to autoplay or loop bugs
             if (this.isInit) return;
