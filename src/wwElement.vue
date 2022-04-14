@@ -148,6 +148,7 @@ export default {
                 spaceBetween: parseInt(this.content.spaceBetween.slice(0, -2)),
                 loop: this.content.loop,
                 freeMode: this.content.linearTransition,
+                allowTouchMove: !this.isEditing,
 
                 on: {
                     realIndexChange: () => {
