@@ -19,7 +19,7 @@
             </wwLayout>
         </div>
 
-        <div v-show="content.pagination" class="bullets">
+        <div v-if="content.pagination" class="bullets">
             <div
                 v-for="index in numberOfBullets"
                 :key="index"
@@ -34,10 +34,10 @@
             </div>
         </div>
 
-        <div v-show="showLeftNav" class="navigation-container prev" @click="slidePrev">
+        <div v-if="showLeftNav" class="navigation-container prev" @click="slidePrev">
             <wwElement class="layout-prev" v-bind="content.navigationIcons[0]" />
         </div>
-        <div v-show="showRightNav" class="navigation-container next" @click="slideNext">
+        <div v-if="showRightNav" class="navigation-container next" @click="slideNext">
             <wwElement class="layout-next" v-bind="content.navigationIcons[1]" />
         </div>
 
