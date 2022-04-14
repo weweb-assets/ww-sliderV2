@@ -20,7 +20,12 @@
         </div>
 
         <div v-show="content.pagination" class="bullets">
-            <div v-for="index in bullets" :key="index" class="bullet-container" @click="onBulletClick(index - 1)">
+            <div
+                v-for="index in numberOfBullets"
+                :key="index"
+                class="bullet-container"
+                @click="onBulletClick(index - 1)"
+            >
                 <wwElement
                     class="bulletIcon"
                     v-bind="content.bulletsIcons"
@@ -52,6 +57,8 @@ import 'swiper/modules/effect-coverflow/effect-coverflow.min.css';
 import 'swiper/modules/effect-cards/effect-cards.min.css';
 import 'swiper/modules/effect-flip/effect-flip.min.css';
 import 'swiper/modules/effect-cube/effect-cube.min.css';
+
+import { getContent } from './getContent.js';
 
 export default {
     props: {
@@ -90,8 +97,8 @@ export default {
             return false;
         },
         nbOfSlides() {
-            if (Array.isArray(this.content.mainLayoutContent)) return this.content.mainLayoutContent.length;
-            return this.content.mainLayoutContent;
+            const content = getContent(this.content.mainLayoutContent);
+            return content.length;
         },
         showLeftNav() {
             const hasPrevious = this.sliderIndex > 0 || this.content.loop;
@@ -101,8 +108,8 @@ export default {
             const hasNext = this.sliderIndex < this.nbOfSlides - 1 || this.content.loop;
             return this.content.navigation && hasNext;
         },
-        bullets() {
-            return Array.from({ length: Math.ceil(this.nbOfSlides - this.slidesPerView + 1) }, (v, i) => i);
+        numberOfBullets() {
+            return Math.ceil(this.nbOfSlides - this.slidesPerView + 1);
         },
         transitionDuration() {
             let value = this.content.transitionDuration;
@@ -141,6 +148,7 @@ export default {
                 spaceBetween: parseInt(this.content.spaceBetween.slice(0, -2)),
                 loop: this.content.loop,
                 freeMode: this.content.linearTransition,
+                allowTouchMove: !this.isEditing,
 
                 on: {
                     realIndexChange: () => {
