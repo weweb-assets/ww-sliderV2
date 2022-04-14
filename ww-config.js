@@ -1,3 +1,13 @@
+function getContent(c) {
+    if (typeof c === 'object' && 'type' in c && c.type === 'collection' && c.data) {
+        return c.data.slice(c.offset, c.offset + c.limit);
+    } else if (Array.isArray(c)) {
+        return c.filter(item => item !== undefined);
+    } else {
+        return [];
+    }
+}
+
 export default {
     editor: {
         label: {
@@ -40,15 +50,14 @@ export default {
             editorOnly: true,
             options: (content, _, boundProps) => {
                 const isBound = !!boundProps.mainLayoutContent;
+                const _content = getContent(content.mainLayoutContent);
 
                 return {
-                    labels: Array.isArray(content.mainLayoutContent)
-                        ? content.mainLayoutContent.map((_, index) => ({
-                              label: `slide ${index + 1}`,
-                          }))
-                        : [],
+                    labels: _content.map((_, index) => ({
+                        label: `slide ${index + 1}`,
+                    })),
                     prefixLabel: 'Slide',
-                    nbTabs: Array.isArray(content.mainLayoutContent) ? content.mainLayoutContent.length : 0,
+                    nbTabs: _content.length,
                     add: 'addSlide',
                     remove: 'removeSlide',
                     bound: isBound,
@@ -65,7 +74,7 @@ export default {
             },
             options: content => ({
                 min: 1,
-                max: Array.isArray(content.mainLayoutContent) ? content.mainLayoutContent.length : 0,
+                max: getContent(content.mainLayoutContent).length,
                 step: 1,
             }),
             responsive: true,
