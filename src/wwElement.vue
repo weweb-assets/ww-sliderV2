@@ -19,13 +19,8 @@
             </wwLayout>
         </div>
 
-        <div v-if="content.pagination" class="bullets">
-            <div
-                v-for="index in numberOfBullets"
-                :key="index"
-                class="bullet-container"
-                @click="onBulletClick(index - 1)"
-            >
+        <div v-show="content.pagination" class="bullets">
+            <div v-for="index in bullets" :key="index" class="bullet-container" @click="onBulletClick(index - 1)">
                 <wwElement
                     class="bulletIcon"
                     v-bind="content.bulletsIcons"
@@ -34,10 +29,10 @@
             </div>
         </div>
 
-        <div v-if="showLeftNav" class="navigation-container prev" @click="slidePrev">
+        <div v-show="showLeftNav" class="navigation-container prev" @click="slidePrev">
             <wwElement class="layout-prev" v-bind="content.navigationIcons[0]" />
         </div>
-        <div v-if="showRightNav" class="navigation-container next" @click="slideNext">
+        <div v-show="showRightNav" class="navigation-container next" @click="slideNext">
             <wwElement class="layout-next" v-bind="content.navigationIcons[1]" />
         </div>
 
@@ -106,8 +101,8 @@ export default {
             const hasNext = this.sliderIndex < this.nbOfSlides - 1 || this.content.loop;
             return this.content.navigation && hasNext;
         },
-        numberOfBullets() {
-            return Math.ceil(this.nbOfSlides - this.slidesPerView + 1);
+        bullets() {
+            return Array.from({ length: Math.ceil(this.nbOfSlides - this.slidesPerView + 1) }, (v, i) => i);
         },
         transitionDuration() {
             let value = this.content.transitionDuration;
