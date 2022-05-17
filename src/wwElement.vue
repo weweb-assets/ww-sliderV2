@@ -252,6 +252,11 @@ export default {
             /* slideToLoop instead of slideTo allows to always rely on the realIndex,
             and thus to keep the right index even when the loop mode is activated */
             if (this.swiperInstance) this.swiperInstance.slideToLoop(index, this.transitionDuration);
+            console.log(
+                index,
+                getContent(this.content.mainLayoutContent),
+                getContent(this.content.mainLayoutContent)[index]
+            );
         },
         onBulletClick(index) {
             if (this.isEditing) return;
@@ -260,10 +265,12 @@ export default {
         slideNext() {
             if (this.isEditing) return;
             if (this.swiperInstance) this.swiperInstance.slideNext(this.transitionDuration);
+            console.log(this.swiperInstance);
         },
         slidePrev() {
             if (this.isEditing) return;
             if (this.swiperInstance) this.swiperInstance.slidePrev(this.transitionDuration);
+            console.log(this.swiperInstance);
         },
         handleAutoplay() {
             if (
