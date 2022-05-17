@@ -204,8 +204,8 @@ export default {
             if (window.__WW_IS_PRERENDER__) return;
 
             // Prevents multiple initializations that can lead to autoplay or loop bugs
-            if (this.isInit) return;
-            this.isInit = true;
+            // if (this.isInit) return;
+            // this.isInit = true;
 
             if (this.swiperInstance && this.swiperInstance.destroy) this.swiperInstance.destroy(true, true);
 
@@ -223,7 +223,7 @@ export default {
 
             // Ensures that autoplay does not continue when editing
             this.handleAutoplay();
-            this.isInit = false;
+            // this.isInit = false;
         },
         /* wwEditor:start */
         async addSlide() {
