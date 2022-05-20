@@ -19,7 +19,7 @@
             </wwLayout>
         </div>
 
-        <!-- <div v-show="content.pagination" class="bullets">
+        <div v-show="content.pagination" class="bullets">
             <div
                 v-for="index in numberOfBullets"
                 :key="index"
@@ -32,7 +32,7 @@
                     :states="index - 1 === sliderIndex ? ['active', 'Current Slide'] : []"
                 />
             </div>
-        </div> -->
+        </div>
 
         <div v-show="showLeftNav" class="navigation-container prev" @click="slidePrev">
             <wwElement class="layout-prev" v-bind="content.navigationIcons[0]" />
@@ -215,6 +215,7 @@ export default {
             await nextTick();
 
             this.swiperInstance = new Swiper(this.$refs.swiper, this.swiperOptions);
+            window.swiperInstance = this.swiperInstance;
             this.sliderIndex = this.swiperInstance.realIndex;
 
             if (resetIndex) this.slideTo(0);
