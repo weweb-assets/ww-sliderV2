@@ -1,5 +1,5 @@
 <template>
-    <div class="ww-slider-container" :style="cssVariables" :class="{ editing: isEditing, selected: isSelected }">
+    <div class="element-container" :style="cssVariables" :class="{ editing: isEditing, selected: isSelected }">
         <div ref="swiper" :key="componentKey" class="swiper" ww-responsive="swiper">
             <wwLayout
                 :disable-drag-drop="true"
@@ -205,7 +205,7 @@ export default {
             if (this.isInit) return;
             this.isInit = true;
 
-            if (this.swiperInstance && this.swiperInstance.destroy) this.swiperInstance.destroy(true, true);
+            // if (this.swiperInstance && this.swiperInstance.destroy) this.swiperInstance.destroy(true, true);
 
             // Necessary to clean the possible persistent style in the element before a new initialization
             this.componentKey += 1;
@@ -287,8 +287,8 @@ export default {
 };
 </script>
 
-<style lang="scss">
-.ww-slider-container {
+<style lang="scss" scoped>
+.element-container {
     position: relative;
 
     .bullets {
