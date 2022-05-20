@@ -1,5 +1,5 @@
 <template>
-    <div class="element-container" :style="cssVariables" :class="{ editing: isEditing, selected: isSelected }">
+    <div class="ww-slider-container" :style="cssVariables" :class="{ editing: isEditing, selected: isSelected }">
         <div ref="swiper" :key="componentKey" class="swiper" ww-responsive="swiper">
             <wwLayout
                 :disable-drag-drop="true"
@@ -287,8 +287,8 @@ export default {
 };
 </script>
 
-<style lang="scss" scoped>
-.element-container {
+<style lang="scss">
+.ww-slider-container {
     position: relative;
 
     .bullets {
