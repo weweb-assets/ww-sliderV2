@@ -19,7 +19,7 @@
             </wwLayout>
         </div>
 
-        <div v-show="content.pagination" class="bullets">
+        <!-- <div v-show="content.pagination" class="bullets">
             <div
                 v-for="index in numberOfBullets"
                 :key="index"
@@ -32,7 +32,7 @@
                     :states="index - 1 === sliderIndex ? ['active', 'Current Slide'] : []"
                 />
             </div>
-        </div>
+        </div> -->
 
         <div v-show="showLeftNav" class="navigation-container prev" @click="slidePrev">
             <wwElement class="layout-prev" v-bind="content.navigationIcons[0]" />
@@ -148,7 +148,7 @@ export default {
                 spaceBetween: parseInt(this.content.spaceBetween.slice(0, -2)),
                 loop: this.content.loop,
                 freeMode: this.content.linearTransition,
-                allowTouchMove: !this.isEditing,
+                // allowTouchMove: !this.isEditing,
 
                 on: {
                     realIndexChange: () => {
