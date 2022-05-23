@@ -190,7 +190,7 @@ export default {
         },
         /* wwEditor:end */
         'content.mainLayoutContent'() {
-            this.initSwiper();
+            this.initSwiper(true, true);
         },
     },
     mounted() {
@@ -200,9 +200,9 @@ export default {
         if (this.swiperInstance) this.swiperInstance.destroy(true, true);
     },
     methods: {
-        async initSwiper(resetIndex = true) {
+        async initSwiper(resetIndex = true, forced = false) {
             // Prevents multiple initializations that can lead to autoplay or loop bugs
-            if (this.isInit) return;
+            if (this.isInit && !forced) return;
             this.isInit = true;
 
             if (this.swiperInstance && this.swiperInstance.destroy) this.swiperInstance.destroy(true, true);
