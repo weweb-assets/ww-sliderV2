@@ -148,7 +148,7 @@ export default {
                 spaceBetween: parseInt(this.content.spaceBetween.slice(0, -2)),
                 loop: this.content.loop,
                 freeMode: this.content.linearTransition,
-                // allowTouchMove: !this.isEditing,
+                allowTouchMove: !this.isEditing,
 
                 on: {
                     realIndexChange: () => {
@@ -188,10 +188,10 @@ export default {
         swiperOptions() {
             this.initSwiper();
         },
+        /* wwEditor:end */
         'content.mainLayoutContent'() {
             this.initSwiper();
         },
-        /* wwEditor:end */
     },
     mounted() {
         this.initSwiper(false);
@@ -205,7 +205,7 @@ export default {
             if (this.isInit) return;
             this.isInit = true;
 
-            // if (this.swiperInstance && this.swiperInstance.destroy) this.swiperInstance.destroy(true, true);
+            if (this.swiperInstance && this.swiperInstance.destroy) this.swiperInstance.destroy(true, true);
 
             // Necessary to clean the possible persistent style in the element before a new initialization
             this.componentKey += 1;
