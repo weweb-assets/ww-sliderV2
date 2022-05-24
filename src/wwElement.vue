@@ -188,10 +188,10 @@ export default {
         swiperOptions() {
             this.initSwiper();
         },
+        /* wwEditor:end */
         'content.mainLayoutContent'() {
             this.initSwiper(true);
         },
-        /* wwEditor:end */
     },
     mounted() {
         this.initSwiper(false);
