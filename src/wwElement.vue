@@ -190,7 +190,7 @@ export default {
         },
         /* wwEditor:end */
         'content.mainLayoutContent'() {
-            this.initSwiper(true, true);
+            this.initSwiper(true);
         },
     },
     mounted() {
@@ -200,9 +200,9 @@ export default {
         if (this.swiperInstance) this.swiperInstance.destroy(true, true);
     },
     methods: {
-        async initSwiper(resetIndex = true, forced = false) {
+        async initSwiper(resetIndex = true) {
             // Prevents multiple initializations that can lead to autoplay or loop bugs
-            if (this.isInit && !forced) return;
+            if (this.isInit) return;
             this.isInit = true;
 
             if (this.swiperInstance && this.swiperInstance.destroy) this.swiperInstance.destroy(true, true);
@@ -215,7 +215,6 @@ export default {
             await nextTick();
 
             this.swiperInstance = new Swiper(this.$refs.swiper, this.swiperOptions);
-            window.swiperInstance = this.swiperInstance;
             this.sliderIndex = this.swiperInstance.realIndex;
 
             if (resetIndex) this.slideTo(0);
