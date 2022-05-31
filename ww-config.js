@@ -6,15 +6,6 @@ export default {
             en: 'Slider',
         },
         icon: 'slider',
-        menuOptions: {
-            quick: {
-                label: {
-                    en: 'Edit slider',
-                    fr: 'Edit slider',
-                },
-                sections: ['slideIndex'],
-            },
-        },
         bubble: {
             icon: 'slider',
         },
