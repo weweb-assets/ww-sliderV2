@@ -188,10 +188,10 @@ export default {
         swiperOptions() {
             this.initSwiper();
         },
-        'content.mainLayoutContent'() {
-            this.initSwiper();
-        },
         /* wwEditor:end */
+        'content.mainLayoutContent'() {
+            this.initSwiper(true);
+        },
     },
     mounted() {
         this.initSwiper(false);
@@ -201,8 +201,6 @@ export default {
     },
     methods: {
         async initSwiper(resetIndex = true) {
-            if (window.__WW_IS_PRERENDER__) return;
-
             // Prevents multiple initializations that can lead to autoplay or loop bugs
             if (this.isInit) return;
             this.isInit = true;
