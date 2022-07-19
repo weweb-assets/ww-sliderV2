@@ -9,6 +9,10 @@ export default {
         bubble: {
             icon: 'slider',
         },
+        customSettingsPropertiesOrder: [
+            ['mainLayoutContent', 'slideIndex'],
+            ['slidesPerView', 'spaceBetween', 'effect', 'transitionDuration'],
+        ],
     },
     properties: {
         mainLayoutContent: {
@@ -26,6 +30,9 @@ export default {
                 { isWwObject: true, type: 'ww-flexbox' },
                 { isWwObject: true, type: 'ww-flexbox' },
             ],
+            navigator: {
+                group: 'Slides',
+            },
         },
         slideIndex: {
             label: { en: 'Slides', fr: 'Slides' },
