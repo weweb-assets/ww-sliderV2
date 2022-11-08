@@ -33,6 +33,20 @@ export default {
             navigator: {
                 group: 'Slides',
             },
+            /* wwEditor:start */
+            bindingValidation: {
+                validations: [
+                    {
+                        type: 'array',
+                    },
+                    {
+                        type: 'object',
+                    },
+                ],
+                tooltip:
+                    'A collection or an array of data: \n\n`myCollection` or `[{}, {}, ...] || ["string1", "string2", ...] || [1, 2, ...]`',
+            },
+            /* wwEditor:end */
         },
         slideIndex: {
             label: { en: 'Slides', fr: 'Slides' },
